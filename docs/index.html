@@ -952,4 +952,100 @@
         { title: 'Thinking in React', path: '/docs/thinking-in-react', icon: '💭' },
         { title: 'Describing the UI', path: '/docs/describing-ui', icon: '🎨' },
         { title: 'Adding Interactivity', path: '/docs/adding-interactivity', icon: '🖱️' },
-        { title: 'Managing State', path: '/docs/managing-state
+        { title: 'Managing State', path: '/docs/managing-state', icon: '📊' },
+        { title: 'Escape Hatches', path: '/docs/escape-hatches', icon: '🪟' },
+        { title: 'Hooks Reference', path: '/docs/hooks-reference', icon: '🪝' },
+        { title: 'API Reference', path: '/docs/api-reference', icon: '📖' },
+      ];
+
+      const searchOverlay = document.getElementById('searchOverlay');
+      const searchTrigger = document.getElementById('searchTrigger');
+      const searchInput = document.getElementById('searchInput');
+      const searchResults = document.getElementById('searchResults');
+      let activeIndex = -1;
+      let currentResults = [];
+
+      function openSearch() {
+        searchOverlay.classList.add('active');
+        setTimeout(() => searchInput.focus(), 100);
+        activeIndex = -1;
+      }
+
+      function closeSearch() {
+        searchOverlay.classList.remove('active');
+        searchInput.value = '';
+        searchResults.innerHTML = '<div class="search-empty">🔍 Type to search...</div>';
+        activeIndex = -1;
+        currentResults = [];
+      }
+
+      function renderResults(results) {
+        currentResults = results;
+        if (results.length === 0) {
+          searchResults.innerHTML = '<div class="search-empty">🔍 No results found</div>';
+          activeIndex = -1;
+          return;
+        }
+        searchResults.innerHTML = results.map((item, i) =>
+          `<a href="${item.path}" class="search-result-item${i === activeIndex ? ' active' : ''}">
+            <span class="icon">${item.icon || '📄'}</span>
+            <span class="title">${item.title}</span>
+            ${item.badge ? `<span class="badge">${item.badge}</span>` : ''}
+            <span class="path">${item.path}</span>
+          </a>`
+        ).join('');
+        const activeEl = searchResults.querySelector('.active');
+        if (activeEl) activeEl.scrollIntoView({ block: 'nearest' });
+      }
+
+      function filterPages(query) {
+        const q = query.toLowerCase();
+        return pages.filter(p =>
+          p.title.toLowerCase().includes(q) || p.path.toLowerCase().includes(q)
+        );
+      }
+
+      // Search input
+      searchInput.addEventListener('input', function() {
+        const results = filterPages(this.value);
+        activeIndex = -1;
+        renderResults(results);
+      });
+
+      // Keyboard navigation
+      searchInput.addEventListener('keydown', function(e) {
+        const items = searchResults.querySelectorAll('.search-result-item');
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeIndex = Math.min(activeIndex + 1, items.length - 1);
+          renderResults(currentResults);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeIndex = Math.max(activeIndex - 1, 0);
+          renderResults(currentResults);
+        } else if (e.key === 'Enter' && activeIndex >= 0 && items[activeIndex]) {
+          items[activeIndex].click();
+        } else if (e.key === 'Escape') {
+          closeSearch();
+        }
+      });
+
+      // Open search
+      searchTrigger.addEventListener('click', openSearch);
+
+      // Keyboard shortcut: Cmd+K or Ctrl+K
+      document.addEventListener('keydown', function(e) {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+          e.preventDefault();
+          openSearch();
+        }
+      });
+
+      // Close on overlay click (outside modal)
+      searchOverlay.addEventListener('click', function(e) {
+        if (e.target === searchOverlay) closeSearch();
+      });
+    })();
+  </script>
+</body>
+</html>
