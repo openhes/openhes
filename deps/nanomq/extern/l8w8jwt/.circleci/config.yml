@@ -1,0 +1,51 @@
+version: 2.1
+jobs:
+  build-x64:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: 'sudo apt-get update && sudo apt-get install -y git gcc g++ build-essential cmake bash curl'
+      - run:
+          name: Fetch submodules
+          command: 'git submodule update --init --recursive'
+      - run:
+          name: Build and run tests with code coverage enabled
+          command: 'bash -eo pipefail test.sh cov'
+      - run:
+          name: Upload coverage reports
+          when: on_success
+          command: cd build/CMakeFiles/run_tests.dir/tests && bash <(curl -s https://codecov.io/bash)
+      - run:
+          name: Build in release mode
+          command: 'bash -eo pipefail build.sh && mkdir build/out && mv build/*.tar.gz build/out'
+      - store_artifacts:
+          path: build/out
+  build-arm64:
+    machine:
+      image: ubuntu-2204:current
+    resource_class: arm.medium
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: 'sudo apt-get update && sudo apt-get install -y git gcc g++ build-essential cmake bash curl'
+      - run:
+          name: Fetch submodules
+          command: 'git submodule update --init --recursive'
+      - run:
+          name: Build and run tests
+          command: 'bash -eo pipefail test.sh'
+      - run:
+          name: Build in release mode
+          command: 'bash -eo pipefail build.sh && mkdir build/out && mv build/*.tar.gz build/out'
+      - store_artifacts:
+          path: build/out
+workflows:
+  build:
+    jobs:
+      - build-x64
+      - build-arm64

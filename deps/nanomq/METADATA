@@ -1,0 +1,15 @@
+name = "nanomq"
+description = "An ultra-lightweight and blazing-fast Messaging Bus/MQTT Broker for Edge & SDV."
+
+[third_party]
+version = "0.24.14"
+license_type = "NOTICE"
+
+[third_party.url]
+type = "GIT"
+value = "https://github.com/nanomq/nanomq"
+
+[third_party.last_upgrade_date]
+year = 2026
+month = 6
+day = 2

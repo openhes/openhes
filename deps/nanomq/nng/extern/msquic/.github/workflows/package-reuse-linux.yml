@@ -1,0 +1,99 @@
+name: Package Linux
+
+# The caller is responsible for making sure all options passed to this workflow are valid and compatible with each other.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      config:
+        required: false
+        default: 'Release'
+        type: string
+        # options:
+        #   - Debug
+        #   - Release
+      os:
+        required: false
+        type: string
+        default: 'ubuntu-20.04'
+        # options:
+        #   - ubuntu-20.04
+        #   - ubuntu-22.04
+      arch:
+        required: false
+        default: 'x64'
+        type: string
+        # options:
+        #   - x86
+        #   - x64
+      tls:
+        required: false
+        default: 'openssl'
+        type: string
+        # options:
+        #   - openssl
+        #   - openssl3
+      static:
+        required: false
+        default: ''
+        type: string
+      clang:
+        required: false
+        default: ''
+        type: string
+      sanitize:
+        required: false
+        default: ''
+        type: string
+      build:
+        required: false
+        default: '' # Empty string means build all
+        type: string
+
+permissions: read-all
+
+jobs:
+  build-unix-reuse:
+    needs: []
+    uses: ./.github/workflows/build-reuse-unix.yml
+    with:
+      config: ${{ inputs.config }}
+      os: ${{ inputs.os }}
+      arch: ${{ inputs.arch }}
+      tls: ${{ inputs.tls }}
+      static: ${{ inputs.static }}
+      systemcrypto: '-UseSystemOpenSSLCrypto' # packages must use libcrypto on system
+      clang: ${{ inputs.clang }}
+      build: ${{ inputs.build }}
+
+  package:
+    name: Package
+    needs: [build-unix-reuse]
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11
+      with:
+        fetch-depth: 0
+    - name: Prepare Machine
+      shell: pwsh
+      run: scripts/prepare-machine.ps1 -ForBuild
+    - name: Download Build Artifacts
+      uses: actions/download-artifact@6b208ae046db98c579e8a3aa621ab581ff575935
+      with:
+        name: ${{ inputs.config }}-linux-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.tls }}-UseSystemOpenSSLCrypto${{ inputs.sanitize }}${{ inputs.build }}
+        path: artifacts
+    - name: Extract binaries # they are tar'd to preserve permissions and symlinks.
+      run: |
+        cd artifacts/bin/linux
+        rm -rf */
+        find -name "*.tar" -exec tar -xvf '{}' \;
+    - name: Build Package
+      shell: pwsh
+      run: scripts/package-distribution.ps1
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@694cdabd8bdb0f10b2cea11669e1bf5453eed0a6
+      with:
+        name: Package-${{ inputs.config }}-linux-${{ inputs.os }}-${{ inputs.arch }}-${{ inputs.tls }}-UseSystemOpenSSLCrypto${{ inputs.sanitize }}${{ inputs.build }}
+        path: artifacts/dist
