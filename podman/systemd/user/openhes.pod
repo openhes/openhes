@@ -1,0 +1,12 @@
+[Unit]
+Description=OpenHES pod
+After=network-online.target
+Wants=network-online.target
+
+[Pod]
+PodName=openhes
+PublishPort=1883:1883
+PublishPort=8081:8081
+
+[Install]
+WantedBy=default.target

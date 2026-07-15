@@ -1,0 +1,17 @@
+[Unit]
+Description=OpenHES MQTT broker
+Requires=openhes-pod.service
+After=openhes-pod.service
+
+[Container]
+ContainerName=openhes-mqtt
+Image=localhost/openhes:dev
+Pod=openhes.pod
+Exec=/opt/openhes/build/deps/nanomq/nanomq/nanomq start --url nmq-tcp://0.0.0.0:1883 --http -p 8081 --log_level info --log_stdout true
+
+[Service]
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=default.target

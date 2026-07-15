@@ -1,0 +1,10 @@
+[Unit]
+Description=Run OpenHES mqtt_cli periodically
+
+[Timer]
+OnBootSec=45s
+OnUnitActiveSec=5m
+Unit=openhes-mqtt-cli.service
+
+[Install]
+WantedBy=timers.target

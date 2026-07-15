@@ -1,0 +1,18 @@
+[Unit]
+Description=OpenHES mqtt_cli publish job
+Requires=mqtt-broker.service
+After=mqtt-broker.service
+
+[Container]
+ContainerName=openhes-mqtt-cli
+Image=localhost/openhes:dev
+Pod=openhes.pod
+Exec=/opt/openhes/build/mqtt_cli
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=60
+
+[Install]
+WantedBy=default.target

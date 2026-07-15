@@ -1,0 +1,23 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        ninja-build \
+        pkg-config \
+        ca-certificates \
+        libcurl4-openssl-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/openhes
+COPY . .
+
+RUN cmake -S . -B build -GNinja -DCMAKE_BUILD_TYPE=Release \
+    && cmake --build build --target nanomq ohsrv mqtt_cli
+
+ENV LD_LIBRARY_PATH=/opt/openhes/build/deps/nanomq/nng:${LD_LIBRARY_PATH}
+
+CMD ["sleep", "infinity"]
