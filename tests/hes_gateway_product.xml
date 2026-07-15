@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<file>
+    <fileFormat>xml</fileFormat>
+    <fileType>lexicon</fileType>
+    <filePurpose>product</filePurpose>
+    <fileManu>def</fileManu>
+    <fileProduct>xyz</fileProduct>
+    <fileProductRefID>123</fileProductRefID>
+    <fileCoverage>partial</fileCoverage>
+    <fileStatus>initial</fileStatus>
+    <fileVersion>1b</fileVersion>
+    <fileSummaryDescription>Initial tables for xyz</fileSummaryDescription>
+    <fileCreatedDescription>Lexicon Object tables for xyz</fileCreatedDescription>
+    <fileCreatedDate>2026-06-15</fileCreatedDate>
+    <fileRevisionDescription>Improvements in table references</fileRevisionDescription>
+    <fileRevisionDate>2026-06-15</fileRevisionDate>
+
+    <overallProcess versionNumber="1.0.0" addrPoint="pa" transCode="lx" descriptiveName="lexicon">
+
+        <lexiconType versionNumber="1.0.0" addrPoint="pa" transCode="ob" descriptiveName="object">
+
+             <objectType versionNumber="1.0.0" addrPoint="pa" transCode="bm" descriptiveName="bindingMap">
+
+                <data versionNumber="1.0.0" addrPoint="pd" transCode="rq" descriptiveName="requirementMandatory" dataPurpose="cd" dataFormat="sl" memoryType="pr" storageType="ad" description="Mandatory or optional" preassigned="mandatory">ma</data>
+                <data versionNumber="1.0.0" addrPoint="pd" transCode="si" descriptiveName="single" dataPurpose="cd" dataFormat="sl" memoryType="pr" storageType="ad" description="Single instance" preassigned="no">no</data>
+                <operationTable versionNumber="1.0.0" addrPoint="na" transCode="ot1" descriptiveName="operationTable" dataPurpose="cd">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ri" descriptiveName="refId" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="unique reference ID for managing each operation group in the table" preassigned="">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="en" descriptiveName="enable" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" enumerated="di,en" description="disable or enable the operation group" preassigned="&apos;di&apos;: disable;  &apos;en&apos;: enable">en</data>
+                    <inputs versionNumber="1.0.0" addrPoint="na" transCode="ip1" descriptiveName="inputs" dataPurpose="cd">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index of source service or device" preassigned="0: not initialized;  >0: reference id of specific device">1</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="so" descriptiveName="sourceObject" dataPurpose="cd" dataFormat="sx" memoryType="po" storageType="gt" description="Lexicon of source object" preassigned="any lexicon string">/lx/ob/uo/hv/as/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="sv" descriptiveName="sourceValue" dataPurpose="cd" dataFormat="" memoryType="po" storageType="gt" description="Value of currentValue" preassigned="value of currentValue"></data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="co" descriptiveName="condition" dataPurpose="cd" dataFormat="sl" memoryType="po" storageType="gt" enumerated="pt,bk,av,ng" description="Conditioning on inputs" preassigned="&apos;pt&apos;: straight pass through without changes; &apos;bk&apos;: block, not pass through; &apos;av&apos;: negative numbers converted to positive; &apos;ng&apos;: invert value">pt</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="at" descriptiveName="authorType" dataPurpose="sd" dataFormat="sl" memoryType="op" storageType="gt" enumerated="bk,fl,pa" description="Type of authorization" preassigned="&apos;bk&apos;: block; &apos;fl&apos;: flow; &apos;pa&apos;: partial">fl</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="me" descriptiveName="method" dataPurpose="cd" dataFormat="sl" memoryType="po" storageType="gt" enumerated="re,up,de,cr" description="Type of method for input message" preassigned="&apos;re&apos;: retrieve; &apos;up&apos;: update; &apos;de&apos;: delete (not used at this time); &apos;cr&apos;: create (not used at this time)">re</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ci" descriptiveName="credInfo" dataPurpose="cd" dataFormat="st" memoryType="po" storageType="gt" description="Information of credential (certificates, access tokens, passwords, etc.)" preassigned="any string"></data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="un" descriptiveName="userName" dataPurpose="cd" dataFormat="st" memoryType="po" storageType="gt" description="User name" preassigned="any string"></data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ap" descriptiveName="accompanyOperation" dataFormat="sl" memoryType="po" storageType="gt" enumerated="pt,bk,au" description="Operation to be performed on accompanied information (such as ‘ci’ and ‘un’)" preassigned="&apos;pt&apos;: straight pass through without changes; &apos;bk&apos;: block, not pass through; &apos;au&apos;: authorize">pt</data>>
+                    </inputs>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="operation" dataPurpose="cd" dataFormat="sl" memoryType="pr" storageType="ad" enumerated="ad,ap,dv,eq,gt,lt,mu,no,su" preassigned="">gt</data>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi1" descriptiveName="inputParameters" dataPurpose="cd" description="the parameters used for the input terms of the operation (currentValue or preset)">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter" dataPurpose="cd" dataFormat="in,sl" memoryType="pr" storageType="gt" preassigned="">va</data>
+                    </inputParameters>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi2" descriptiveName="inputParameters" dataPurpose="cd" description="the parameters used for the input terms of the operation (currentValue or preset)">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter" dataPurpose="cd" dataFormat="in,sl" memoryType="pr" storageType="gt" preassigned="">17</data>
+                    </inputParameters>
+                    <outputParameters versionNumber="1.0.0" addrPoint="na" transCode="po1" descriptiveName="outputParameters" dataPurpose="cd" description="the parameters used to inform the output of conditional operations (currentValue or preset, if true; currentValue or preset, if false)">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="outputParameter" dataPurpose="cd" dataFormat="in,sl" memoryType="pr" storageType="gt" preassigned="">1</data>
+                    </outputParameters>
+                    <outputParameters versionNumber="1.0.0" addrPoint="na" transCode="po2" descriptiveName="outputParameters" dataPurpose="cd" description="the parameters used to inform the output of conditional operations (currentValue or preset, if true; currentValue or preset, if false)">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="outputParameter" dataPurpose="cd" dataFormat="in,sl" memoryType="pr" storageType="gt" preassigned="">0</data>
+                    </outputParameters>
+                    <outputs versionNumber="1.0.0" addrPoint="na" transCode="op1" descriptiveName="inputs" dataPurpose="cd">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="dl" descriptiveName="deviceList" dataPurpose="cd" dataFormat="an" memoryType="po" storageType="gt" description="List of indexes of destination services and devices" preassigned="&apos;0&apos;: not initialized; &apos;> 0&apos;: reference id of specific device"></data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="do" descriptiveName="destObject" dataPurpose="cd" dataFormat="sx" memoryType="po" storageType="gt" description="Lexicon of destinatione object" preassigned="any lexicon string">/lx/ob/uo/li/ll/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="dv" descriptiveName="destValue" dataPurpose="cd" dataFormat="" memoryType="po" storageType="gt" description="Value of currentValue" preassigned="value of currentValue"></data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="adjustment" dataPurpose="cd" dataFormat="sl" memoryType="po" storageType="gt" enumerated="pt,bk,av,ng" description="Conditioning on inputs" preassigned="&apos;pt&apos;: straight pass through without changes; &apos;bk&apos;: block, not pass through; &apos;av&apos;: negative numbers converted to positive; &apos;ng&apos;: invert value">pt</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="at" descriptiveName="authorType" dataPurpose="sd" dataFormat="sl" memoryType="op" storageType="gt" enumerated="bk,fl,pa" description="Type of authorization" preassigned="&apos;bk&apos;: block; &apos;fl&apos;: flow; &apos;pa&apos;: partial">fl</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="optinOut" dataPurpose="sd" dataFormat="sl" memoryType="op" storageType="gt" enumerated="oi,ou,fi,fo" description="Opt-in and opt-out mechanisms" preassigned="&apos;oi&apos;: opt-in; &apos;ou&apos;: opt-out; &apos;fi&apos;: forced in; &apos;fo&apos;: forced out"></data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="me" descriptiveName="method" dataPurpose="sd" dataFormat="sl" memoryType="op" storageType="gt" enumerated="re,up,de,cr" description="Type of method for input message" preassigned="&apos;re&apos;: retrieve; &apos;up&apos;: update; &apos;de&apos;: delete (not used at this time); &apos;cr&apos;: create (not used at this time)">up</data>
+                    </outputs>
+                </operationTable>
+                <!-- HAN interface 1 definition -->
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at1" descriptiveName="addressingTable" dataPurpose="cd">
+                    <!-- deviceIndex is 1, which is the index of the device that connects to this HAN interface module. -->
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index to device or service" preassigned="0: not initialized; > 0: reference id of specific device">1</data>
+                    <!-- moduleType is hi, which means HAN interface. -->
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType" dataPurpose="cd" dataFormat="sl" memoryType="po" storageType="gt" enumerated="hi,it,sm,wi" description="Type of source module" preassigned="&apos;hi&apos;: HAN interface module; &apos;wi&apos;: WAN interface module; &apos;sm&apos;: Service module; &apos;it&apos;: Internal process">hi</data>
+                    <!-- moduleRefIndex is 1, which is the index of the HAN interface. -->
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index reference to source module" preassigned="0: not applicable or not initialized; > 0: reference id of module, 1 or 2 for a simple gateway, potentially higher for other gateway classes">1</data>
+                    <!-- netRefIndex is 5, which is the index of the device or service on the attached HAN network. -->
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index to device or service on the attached network" preassigned="0: general reference (e.g. index of interface module itself); > 0: index to device or service on attached network; NOTE This value originates from a translation table of indexes to attached network addressing contained within interface module.">5</data>
+                    <!-- address is the IP address of the interface module. -->
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address" dataPurpose="cd" dataFormat="ip" memoryType="po" storageType="gt" description="IP address of interface modules" preassigned=""></data>
+                </addressingTable>
+                <!-- HAN interface 2 definition -->
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at2" descriptiveName="addressingTable" dataPurpose="cd">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index to device or service" preassigned="0: not initialized; > 0: reference id of specific device">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType" dataPurpose="cd" dataFormat="sl" memoryType="po" storageType="gt" enumerated="hi,it,sm,wi" description="Type of source module" preassigned="&apos;hi&apos;: HAN interface module; &apos;wi&apos;: WAN interface module; &apos;sm&apos;: Service module; &apos;it&apos;: Internal process">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index reference to source module" preassigned="0: not applicable or not initialized; > 0: reference id of module, 1 or 2 for a simple gateway, potentially higher for other gateway classes">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex" dataPurpose="cd" dataFormat="nn" memoryType="po" storageType="gt" description="Index to device or service on the attached network" preassigned="0: general reference (e.g. index of interface module itself); > 0: index to device or service on attached network; NOTE This value originates from a translation table of indexes to attached network addressing contained within interface module.">7</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address" dataPurpose="cd" dataFormat="ip" memoryType="po" storageType="gt" description="IP address of interface modules" preassigned=""></data>
+                </addressingTable>
+            </objectType>
+
+        </lexiconType>
+
+    </overallProcess>
+</file>
+
