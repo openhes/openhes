@@ -1,0 +1,20 @@
+{
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/build-*/vcpkg_installed/**/include",
+        "${workspaceFolder}/deps/log/**",
+        "${workspaceFolder}/deps/libxml2/include/**",
+        "${workspaceFolder}/deps/lua-5.4.8/src/**",
+        "${workspaceFolder}/deps/luasocket-3.1/src/**",
+        "${workspaceFolder}/deps/luafilesystem-1.9.0/src/**",
+        "${workspaceFolder}/deps/lpeg-1.1.0/**",
+        "${workspaceFolder}/deps/parson-1.5.3/**",
+        "${workspaceFolder}/deps/miniz-3.1.1/**",
+        "${workspaceFolder}/deps/tomlc17/src/**",
+        "${workspaceFolder}/deps/cwalk-1.2.9/**",
+        "${workspaceFolder}/vendor/sqlite-3.53.1",
+        "${workspaceFolder}/build-*"
+    ],
+    "C_Cpp.default.browse.path": [
+        "C:/Users/tomgh/AppData/Local/forge/bin/vcpkg/2026.03.18/buildtrees"
+    ]
+}

@@ -1,0 +1,54 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug forge.exe (MSVC)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build-debug/forge.exe",
+      // "args": ["template", "search", "cmake", "--db-path", "${workspaceFolder}/b.db"],
+      // "args": ["template", "package", "${workspaceFolder}/templates/builtin", "${workspaceFolder}/b.db"],
+      "args": ["--log-level", "0", "init", "builtin:cmake-cpp-app", "."],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/tests",
+      "environment": [],
+      "console": "internalConsole"
+    },
+    {
+      "type": "emmylua_attach",
+      "request": "attach",
+      "name": "Attach to Embedded Lua (EmmyLua)",
+      "host": "localhost",
+      "port": 9966,
+      "ext": [
+        ".lua"
+      ],
+      "ideConnectDebugger": true
+    },
+    {
+      "type": "emmylua_attach",
+      "request": "attach",
+      "name": "Attach EmmyLua (Custom Port)",
+      "host": "localhost",
+      "port": 9966,
+      "ext": [
+        ".lua"
+      ],
+      "ideConnectDebugger": true,
+      "captureStd": true,
+      "captureOutputDebugString": false
+    },
+    {
+        "type": "LuaHelper-Debug",
+        "request": "launch",
+        "name": "LuaHelper: Attach",
+        "program": "${workspaceFolder}/build/Debug/luamin.exe",
+        "args": ["test.lua"],
+        "cwd": "${workspaceFolder}/tests",
+        "luaFileExtension": "",
+        "connectionPort": 8818,
+        "stopOnEntry": false,
+        "pathCaseSensitivity": true
+    }
+  ]
+}

@@ -1,4 +1,5 @@
-build/
+.temp/
+build*/
 
 # Prerequisites
 *.d
