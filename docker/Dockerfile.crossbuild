@@ -1,0 +1,146 @@
+# =============================================================================
+# Dockerfile.crossbuild
+#
+# Cross-compilation container for Raspberry Pi 64-bit (aarch64).
+# Uses gcc-aarch64-linux-gnu toolchain. ARM64 libraries are downloaded
+# directly from ports.ubuntu.com and extracted (no apt/dpkg postinst
+# headaches).  Much more stable than QEMU-emulated gcc.
+#
+# Usage:
+#   docker build -t openhes-cross -f Dockerfile.crossbuild .
+#   docker run --rm -v "$(PWD):/src" openhes-cross
+# =============================================================================
+
+FROM ubuntu:24.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ---------------------------------------------------------------------------
+# 1. Install native amd64 toolchain + build tools
+# ---------------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu \
+        binutils-aarch64-linux-gnu \
+        build-essential \
+        cmake \
+        ninja-build \
+        pkg-config \
+        curl \
+        ca-certificates \
+        file \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# 2. Configure arm64 repos and add architecture
+# ---------------------------------------------------------------------------
+RUN rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources \
+    && { \
+        echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse"; \
+        echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse"; \
+        echo "deb [arch=amd64] http://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse"; \
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse"; \
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse"; \
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse"; \
+    } > /etc/apt/sources.list \
+    && dpkg --add-architecture arm64
+
+# ---------------------------------------------------------------------------
+# 3. Download ARM64 .deb packages via apt-get download (no postinst runs)
+#    and extract headers + libraries into the cross-compiler sysroot.
+# ---------------------------------------------------------------------------
+WORKDIR /tmp/arm64-libs
+
+RUN apt-get update \
+    && for pkg in \
+        libc6-dev:arm64 libstdc++-14-dev:arm64 linux-libc-dev:arm64 \
+        libglib2.0-dev:arm64 libglib2.0-0:arm64 libffi-dev:arm64 \
+        libhiredis-dev:arm64 \
+        libxml2-dev:arm64 \
+        libbluetooth-dev:arm64 \
+        zlib1g-dev:arm64 libssl-dev:arm64 uuid-dev:arm64 \
+        libelf-dev:arm64 libpcre2-dev:arm64 libbz2-dev:arm64 liblzma-dev:arm64 \
+        libmount-dev:arm64 libselinux1-dev:arm64; \
+    do \
+        echo "Downloading $pkg ..."; \
+        apt-get download "$pkg" 2>/dev/null; \
+    done \
+    && echo "Extracting packages..." \
+    && mkdir -p sysroot \
+    && for f in *.deb; do dpkg-deb -x "$f" sysroot/ 2>/dev/null || true; done \
+    && echo "Done extracting."
+
+# ---------------------------------------------------------------------------
+# 3. Move ARM64 headers + libraries into the cross-compiler sysroot
+# ----------------------------------------------------------------------------
+RUN mkdir -p /usr/aarch64-linux-gnu/include /usr/aarch64-linux-gnu/lib \
+    && cp -r sysroot/usr/include/* /usr/aarch64-linux-gnu/include/ 2>/dev/null || true \
+    && cp -r sysroot/usr/lib/aarch64-linux-gnu/* /usr/aarch64-linux-gnu/lib/ 2>/dev/null || true \
+    && cp -r sysroot/lib/aarch64-linux-gnu/* /usr/aarch64-linux-gnu/lib/ 2>/dev/null || true \
+    # glib arch-specific headers
+    && if [ -d sysroot/usr/lib/aarch64-linux-gnu/glib-2.0 ]; then \
+        mkdir -p /usr/aarch64-linux-gnu/lib/glib-2.0; \
+        cp -r sysroot/usr/lib/aarch64-linux-gnu/glib-2.0/* /usr/aarch64-linux-gnu/lib/glib-2.0/; \
+    fi \
+    # pkg-config .pc files
+    && if [ -d sysroot/usr/lib/aarch64-linux-gnu/pkgconfig ]; then \
+        mkdir -p /usr/aarch64-linux-gnu/lib/pkgconfig; \
+        cp sysroot/usr/lib/aarch64-linux-gnu/pkgconfig/* /usr/aarch64-linux-gnu/lib/pkgconfig/; \
+    fi \
+    && rm -rf /tmp/arm64-libs
+
+# ---------------------------------------------------------------------------
+# 4. Install native libglib2.0-dev (amd64) for pkg-config + glib-genmarshal
+# ---------------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libglib2.0-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /usr/aarch64-linux-gnu/lib/pkgconfig
+
+# ---------------------------------------------------------------------------
+# 5. Create the CMake toolchain file
+# ---------------------------------------------------------------------------
+RUN mkdir -p /toolchains && printf '%s\n' \
+    '# ARM64 (aarch64) cross-compilation toolchain' \
+    'set(CMAKE_SYSTEM_NAME Linux)' \
+    'set(CMAKE_SYSTEM_PROCESSOR aarch64)' \
+    '' \
+    'set(CMAKE_C_COMPILER   aarch64-linux-gnu-gcc)' \
+    'set(CMAKE_CXX_COMPILER aarch64-linux-gnu-g++)' \
+    'set(CMAKE_AR           aarch64-linux-gnu-ar)' \
+    'set(CMAKE_RANLIB       aarch64-linux-gnu-ranlib)' \
+    'set(CMAKE_STRIP        aarch64-linux-gnu-strip)' \
+    '' \
+    'set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)' \
+    'set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)' \
+    'set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)' \
+    'set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)' \
+    '' \
+    'set(PKG_CONFIG_EXECUTABLE aarch64-linux-gnu-pkg-config)' \
+    'set(ENV{PKG_CONFIG_PATH} "/usr/aarch64-linux-gnu/lib/pkgconfig")' \
+    'set(ENV{PKG_CONFIG_LIBDIR} "/usr/aarch64-linux-gnu/lib/pkgconfig:/usr/share/pkgconfig")' \
+    > /toolchains/arm64-toolchain.cmake
+
+# Link cross pkg-config wrapper
+RUN if ! command -v aarch64-linux-gnu-pkg-config &>/dev/null; then \
+        ln -sf /usr/bin/pkg-config /usr/bin/aarch64-linux-gnu-pkg-config; \
+    fi
+
+WORKDIR /src
+CMD ["/bin/bash", "-c", "\
+    rm -rf build-arm64 && \
+    cmake -B build-arm64 \
+          -DCMAKE_TOOLCHAIN_FILE=/toolchains/arm64-toolchain.cmake \
+          -GNinja && \
+    ninja -C build-arm64 -j$(nproc) && \
+    echo '' && \
+    echo '=== Build successful! ARM64 binaries in build-arm64/ ===' && \
+    for f in redis_pub redis_sub ohsrv hes_han mqtt_pub mqtt_sub sensortag_button test; do \
+        path=\"build-arm64/$f\"; \
+        [ -f \"$path\" ] && file \"$path\"; \
+    done" \
+]

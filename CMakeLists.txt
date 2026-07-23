@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.28)
 project(ohsrv)
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static")
-
 find_package(PkgConfig QUIET)
 if(PkgConfig_FOUND)
   pkg_check_modules(HIREDIS QUIET hiredis)
+  pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0 gobject-2.0 gio-2.0)
 endif()
 
 if(NOT HIREDIS_FOUND)
@@ -29,6 +28,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   foreach(_third_party_target nng nng_testing nanomq nanomq_cli)
     if(TARGET ${_third_party_target})
       target_compile_options(${_third_party_target} PRIVATE -w)
+      target_link_options(${_third_party_target} PRIVATE -static)
     endif()
   endforeach()
 endif()
@@ -41,6 +41,7 @@ add_subdirectory(deps/libxml2)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   if(TARGET LibXml2)
     target_compile_options(LibXml2 PRIVATE -w)
+    target_link_options(LibXml2 PRIVATE -static)
   endif()
 endif()
 
@@ -58,6 +59,7 @@ target_include_directories(ohsrv PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(ohsrv PRIVATE -Wall)
+  target_link_options(ohsrv PRIVATE -static)
 endif()
 
 # MQTT server
@@ -74,6 +76,7 @@ target_include_directories(hes_han PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(hes_han PRIVATE -Wall)
+  target_link_options(hes_han PRIVATE -static)
 endif()
 
 # # Vendored Mosquitto (client library only)
@@ -108,6 +111,7 @@ target_include_directories(mqtt_pub PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(mqtt_pub PRIVATE -Wall)
+  target_link_options(mqtt_pub PRIVATE -static)
 endif()
 
 # MQTT subscriber
@@ -128,6 +132,7 @@ target_include_directories(mqtt_sub PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(mqtt_sub PRIVATE -Wall)
+  target_link_options(mqtt_sub PRIVATE -static)
 endif()
 
 # test
@@ -142,15 +147,22 @@ if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # sensortag button — reads BLE button state from TI CC2650 SensorTag
-# via a raw L2CAP socket using libbluetooth.
+# via D-Bus / GattCharacteristic1 notifications using GLib + GIO.
+# Linked dynamically (glib only ships .so on Ubuntu arm64).
 
 add_executable(sensortag_button
   src/sensortag_button.c
 )
 
-target_link_libraries(sensortag_button PRIVATE bluetooth)
+target_include_directories(sensortag_button PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_button PRIVATE
+  PkgConfig::GLIB2
+)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(sensortag_button PRIVATE -Wall)
-  target_link_options(sensortag_button PRIVATE -static)
 endif()
