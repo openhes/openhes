@@ -7,8 +7,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-// #define BROKER_URL "mqtt-tcp://127.0.0.1:1883"
-#define BROKER_URL "ipc:///tmp/mqtt.sock"
+#define BROKER_URL "mqtt-tcp://127.0.0.1:1883"
+// #define BROKER_URL "ipc:///tmp/mqtt.sock"
 #define TOPIC      "test/topic"
 #define CLIENT_ID  "nanosdk-subscriber"
 

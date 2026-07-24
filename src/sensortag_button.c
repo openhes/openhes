@@ -80,28 +80,37 @@ on_properties_changed(GDBusProxy *proxy, GVariant *changed_properties,
 
 // -------------------------------------------------------------------------
 // Wait until BlueZ reports that services have been resolved for this device
+//
+// Must iterate the main context while waiting so D-Bus property-change
+// signals actually arrive and update the proxy cache.  A plain sleep
+// loop would block message processing and `ServicesResolved` would never
+// flip from FALSE to TRUE.
 // -------------------------------------------------------------------------
 static gboolean
 wait_for_services_resolved(GDBusProxy *dproxy, int timeout_sec)
 {
+	// Fast path – already resolved
 	GVariant *val = g_dbus_proxy_get_cached_property(dproxy, "ServicesResolved");
-	if (val && g_variant_get_boolean(val)) {
+	if (val) {
+		gboolean resolved = g_variant_get_boolean(val);
 		g_variant_unref(val);
-		return TRUE;
-	}
-	if (val)
-		g_variant_unref(val);
-
-	// Poll every 500ms up to timeout_sec
-	for (int i = 0; i < timeout_sec * 2; i++) {
-		g_usleep(500000);
-		val = g_dbus_proxy_get_cached_property(dproxy, "ServicesResolved");
-		if (val && g_variant_get_boolean(val)) {
-			g_variant_unref(val);
+		if (resolved)
 			return TRUE;
-		}
-		if (val)
+	}
+
+	// Poll – iterate the main context so D-Bus messages get processed
+	for (int i = 0; i < timeout_sec * 4; i++) {
+		// Process any pending D-Bus events so the property cache updates
+		g_main_context_iteration(NULL, FALSE);
+		g_usleep(250000);
+
+		val = g_dbus_proxy_get_cached_property(dproxy, "ServicesResolved");
+		if (val) {
+			gboolean resolved = g_variant_get_boolean(val);
 			g_variant_unref(val);
+			if (resolved)
+				return TRUE;
+		}
 	}
 	return FALSE;
 }
@@ -185,8 +194,11 @@ main(void)
 	}
 	printf("Connected. Waiting for services to resolve...\n");
 
-	if (!wait_for_services_resolved(dev_proxy, 15)) {
-		g_printerr("Services did not resolve within 15 s.\n");
+	if (!wait_for_services_resolved(dev_proxy, 30)) {
+		g_printerr("Services did not resolve within 30 s.\n");
+		// Disconnect so BlueZ doesn't linger in a half-connected state
+		g_dbus_proxy_call_sync(dev_proxy, "Disconnect", NULL,
+		    G_DBUS_CALL_FLAGS_NONE, 5000, NULL, NULL);
 		g_object_unref(dev_proxy);
 		g_object_unref(connection);
 		return 1;

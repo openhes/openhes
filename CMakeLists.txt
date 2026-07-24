@@ -28,7 +28,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   foreach(_third_party_target nng nng_testing nanomq nanomq_cli)
     if(TARGET ${_third_party_target})
       target_compile_options(${_third_party_target} PRIVATE -w)
-      target_link_options(${_third_party_target} PRIVATE -static)
+      # target_link_options(${_third_party_target} PRIVATE -static)
     endif()
   endforeach()
 endif()
@@ -41,7 +41,7 @@ add_subdirectory(deps/libxml2)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   if(TARGET LibXml2)
     target_compile_options(LibXml2 PRIVATE -w)
-    target_link_options(LibXml2 PRIVATE -static)
+    # target_link_options(LibXml2 PRIVATE -static)
   endif()
 endif()
 
@@ -59,7 +59,7 @@ target_include_directories(ohsrv PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(ohsrv PRIVATE -Wall)
-  target_link_options(ohsrv PRIVATE -static)
+  # target_link_options(ohsrv PRIVATE -static)
 endif()
 
 # MQTT server
@@ -76,7 +76,7 @@ target_include_directories(hes_han PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(hes_han PRIVATE -Wall)
-  target_link_options(hes_han PRIVATE -static)
+  # target_link_options(hes_han PRIVATE -static)
 endif()
 
 # # Vendored Mosquitto (client library only)
@@ -111,7 +111,7 @@ target_include_directories(mqtt_pub PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(mqtt_pub PRIVATE -Wall)
-  target_link_options(mqtt_pub PRIVATE -static)
+  # target_link_options(mqtt_pub PRIVATE -static)
 endif()
 
 # MQTT subscriber
@@ -132,7 +132,7 @@ target_include_directories(mqtt_sub PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(mqtt_sub PRIVATE -Wall)
-  target_link_options(mqtt_sub PRIVATE -static)
+  # target_link_options(mqtt_sub PRIVATE -static)
 endif()
 
 # test
@@ -143,7 +143,7 @@ add_executable(test
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test PRIVATE -Wall)
-  target_link_options(test PRIVATE -static)
+  # target_link_options(test PRIVATE -static)
 endif()
 
 # sensortag button — reads BLE button state from TI CC2650 SensorTag
