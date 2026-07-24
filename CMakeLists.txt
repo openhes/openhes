@@ -28,7 +28,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   foreach(_third_party_target nng nng_testing nanomq nanomq_cli)
     if(TARGET ${_third_party_target})
       target_compile_options(${_third_party_target} PRIVATE -w)
-      # target_link_options(${_third_party_target} PRIVATE -static)
     endif()
   endforeach()
 endif()
@@ -41,7 +40,6 @@ add_subdirectory(deps/libxml2)
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
   if(TARGET LibXml2)
     target_compile_options(LibXml2 PRIVATE -w)
-    # target_link_options(LibXml2 PRIVATE -static)
   endif()
 endif()
 
@@ -59,7 +57,6 @@ target_include_directories(ohsrv PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(ohsrv PRIVATE -Wall)
-  # target_link_options(ohsrv PRIVATE -static)
 endif()
 
 # MQTT server
@@ -76,7 +73,6 @@ target_include_directories(hes_han PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(hes_han PRIVATE -Wall)
-  # target_link_options(hes_han PRIVATE -static)
 endif()
 
 # # Vendored Mosquitto (client library only)
@@ -98,7 +94,6 @@ endif()
 
 add_executable(mqtt_pub
   src/mqtt_pub.c
-  # src/publish.c
 )
 
 target_link_libraries(mqtt_pub PRIVATE nng)
@@ -111,18 +106,15 @@ target_include_directories(mqtt_pub PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(mqtt_pub PRIVATE -Wall)
-  # target_link_options(mqtt_pub PRIVATE -static)
 endif()
 
 # MQTT subscriber
 
 add_executable(mqtt_sub
   src/mqtt_sub.c
-  # src/subscribe.c
 )
 
 target_link_libraries(mqtt_sub PRIVATE nng)
-# target_link_libraries(mqtt_sub PRIVATE libmosquitto)
 
 target_include_directories(mqtt_sub PRIVATE
   deps/nanomq/nanomq/include
@@ -132,7 +124,6 @@ target_include_directories(mqtt_sub PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(mqtt_sub PRIVATE -Wall)
-  # target_link_options(mqtt_sub PRIVATE -static)
 endif()
 
 # test
@@ -143,7 +134,6 @@ add_executable(test
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test PRIVATE -Wall)
-  # target_link_options(test PRIVATE -static)
 endif()
 
 # sensortag button — reads BLE button state from TI CC2650 SensorTag
@@ -165,4 +155,131 @@ target_link_libraries(sensortag_button PRIVATE
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(sensortag_button PRIVATE -Wall)
+endif()
+
+# ---------------------------------------------------------------------------
+# sensortag_bar – Barometric pressure reader (CC2650 SensorTag)
+# Like sensortag_button, but discovers characteristics by UUID at runtime
+# and reads pressure data every second.
+# ---------------------------------------------------------------------------
+add_executable(sensortag_bar
+  src/sensortag_bar.c
+)
+
+target_include_directories(sensortag_bar PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_bar PRIVATE
+  PkgConfig::GLIB2
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(sensortag_bar PRIVATE -Wall)
+endif()
+
+# ---------------------------------------------------------------------------
+# sensortag_battery – Battery level reader (CC2650 SensorTag)
+# Reads the standard Battery Level characteristic once and exits.
+# ---------------------------------------------------------------------------
+add_executable(sensortag_battery
+  src/sensortag_battery.c
+)
+
+target_include_directories(sensortag_battery PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_battery PRIVATE
+  PkgConfig::GLIB2
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(sensortag_battery PRIVATE -Wall)
+endif()
+
+# ---------------------------------------------------------------------------
+# sensortag_humid – Humidity / temperature reader (CC2650 SensorTag)
+# Enables the HDC1000 sensor and reads temperature + % RH every second.
+# ---------------------------------------------------------------------------
+add_executable(sensortag_humid
+  src/sensortag_humid.c
+)
+
+target_include_directories(sensortag_humid PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_humid PRIVATE
+  PkgConfig::GLIB2
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(sensortag_humid PRIVATE -Wall)
+endif()
+
+# ---------------------------------------------------------------------------
+# sensortag_light – Ambient light (OPT3001) reader (CC2650 SensorTag)
+# Enables the OPT3001 sensor and reads illuminance (Lux) every second.
+# ---------------------------------------------------------------------------
+add_executable(sensortag_light
+  src/sensortag_light.c
+)
+
+target_include_directories(sensortag_light PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_light PRIVATE
+  PkgConfig::GLIB2
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(sensortag_light PRIVATE -Wall)
+endif()
+
+# ---------------------------------------------------------------------------
+# sensortag_mic – Digital microphone (SPH0641LU4H) reader (CC2650 SensorTag)
+# Enables the microphone and displays a real-time sound level meter.
+# ---------------------------------------------------------------------------
+add_executable(sensortag_mic
+  src/sensortag_mic.c
+)
+
+target_include_directories(sensortag_mic PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_mic PRIVATE
+  PkgConfig::GLIB2
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(sensortag_mic PRIVATE -Wall)
+endif()
+
+# ---------------------------------------------------------------------------
+# sensortag_motion – 9-axis motion (MPU-9250) reader (CC2650 SensorTag)
+# Enables gyroscope, accelerometer and magnetometer and streams all axes.
+# ---------------------------------------------------------------------------
+add_executable(sensortag_motion
+  src/sensortag_motion.c
+)
+
+target_include_directories(sensortag_motion PRIVATE
+  /usr/aarch64-linux-gnu/include/glib-2.0
+  /usr/aarch64-linux-gnu/lib/glib-2.0/include
+)
+
+target_link_libraries(sensortag_motion PRIVATE
+  PkgConfig::GLIB2
+)
+
+if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
+  target_compile_options(sensortag_motion PRIVATE -Wall)
 endif()
