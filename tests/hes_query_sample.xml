@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fixture for tests/test_hes_query.c: exercises the path language and the
+  tree-navigation API of src/common/hes_query.c.
+
+  Shape (deliberately repetitive, so counts, indices and document order are all
+  checkable):
+
+    file
+      fileFormat          "HES"                  (tight text)
+      empty                                       (exists, no text at all)
+      blank               "   "                   (whitespace-only text)
+      emptyAttr  code=""                          (attribute present, empty)
+      overallProcess
+        lexiconType[0]  transCode="l1"
+          objectType[0] transCode="o1"
+            operationTable[0] transCode="ot1"
+              data descriptiveName="refId"      "1"
+              data descriptiveName="operation"  "gt"
+              inputs
+                data descriptiveName="deviceIndex" "6"   (nested <data>)
+            operationTable[1] transCode="ot2"
+              data descriptiveName="refId"      "2"
+              data descriptiveName="operation"  "lt"
+            addressingTable[0] transCode="at1"
+              data descriptiveName="deviceIndex" "6"
+        lexiconType[1]  transCode="l2"
+          objectType[0] transCode="o2"
+            operationTable[0] transCode="ot3"
+              data descriptiveName="operation"  "ad"
+
+  So: 2 lexiconType, 3 operationTable (at two depths), 1 addressingTable, and 7
+  <data> elements, three of which are NOT direct children of an operationTable.
+  That last detail is what separates hes_query_elem_children() from
+  hes_query_find_all().
+-->
+<file versionNumber="1.0.0" transCode="lx" descriptiveName="lexicon">
+    <fileFormat>HES</fileFormat>
+    <empty/>
+    <blank>   </blank>
+    <emptyAttr code=""/>
+    <overallProcess versionNumber="1.0.0" transCode="ob" descriptiveName="object">
+        <lexiconType versionNumber="1.0.0" transCode="l1" descriptiveName="object">
+            <objectType versionNumber="1.0.0" transCode="o1" descriptiveName="bindingMap">
+                <operationTable versionNumber="1.0.0" transCode="ot1" descriptiveName="operationTable">
+                    <data descriptiveName="refId">1</data>
+                    <data descriptiveName="operation">gt</data>
+                    <inputs transCode="ip1" descriptiveName="inputs">
+                        <data descriptiveName="deviceIndex">6</data>
+                    </inputs>
+                </operationTable>
+                <operationTable versionNumber="1.0.0" transCode="ot2" descriptiveName="operationTable">
+                    <data descriptiveName="refId">2</data>
+                    <data descriptiveName="operation">lt</data>
+                </operationTable>
+                <addressingTable versionNumber="1.0.0" transCode="at1" descriptiveName="addressingTable">
+                    <data descriptiveName="deviceIndex">6</data>
+                </addressingTable>
+            </objectType>
+        </lexiconType>
+        <lexiconType versionNumber="1.0.0" transCode="l2" descriptiveName="object">
+            <objectType versionNumber="1.0.0" transCode="o2" descriptiveName="bindingMap">
+                <operationTable versionNumber="1.0.0" transCode="ot3" descriptiveName="operationTable">
+                    <data descriptiveName="operation">ad</data>
+                </operationTable>
+            </objectType>
+        </lexiconType>
+    </overallProcess>
+</file>

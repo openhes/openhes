@@ -1,0 +1,40 @@
+{
+  "_comment": [
+    "Authorization policy (18012-3 11.2.4). Read-only in the gateway: the",
+    "standard marks these tables memoryType 'sp' (Secret Programmed) -- secret,",
+    "preset, and not changeable over HES-CLME. Edit this file and restart.",
+    "In this variant the KID is the active user (st=au) and the parent is not,",
+    "so the kid may drive the light power (target A) but not the brightness",
+    "(target B) -- the 'kid partial control' case of Annex D.",
+    "The credentials below are demo secrets. Never log or expose credInfo."
+  ],
+
+  "authClasses": [
+    { "ci": 1, "fn": "parent", "st": "na", "ti": 1, "pi": 10, "cr": 1 },
+    { "ci": 2, "fn": "kid",    "st": "au", "ti": 2, "pi": 20, "cr": 2 }
+  ],
+
+  "authIdentities": [
+    { "id": 1, "ta": "dv", "di": 7 },
+    { "id": 2, "ta": "dv", "di": 6 }
+  ],
+
+  "credentials": [
+    { "id": 1, "cm": "pw", "cp": "tl", "ci": "parent-secret", "ss": 1785612000, "cv": "ye" },
+    { "id": 2, "cm": "pw", "cp": "tl", "ci": "kid-secret",    "ss": 1785612000, "cv": "ye" }
+  ],
+
+  "permissionGroups": [
+    { "pi": 10, "pt": "ps", "pr": 101 },
+    { "pi": 10, "pt": "ps", "pr": 102 },
+    { "pi": 20, "pt": "ps", "pr": 201 },
+    { "pi": 20, "pt": "ps", "pr": 202 }
+  ],
+
+  "permissionServices": [
+    { "pi": 101, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot1/op1/at", "vn": "fl" },
+    { "pi": 102, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot2/op1/at", "vn": "fl" },
+    { "pi": 201, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot1/op1/at", "vn": "fl" },
+    { "pi": 202, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot2/op1/at", "vn": "bk" }
+  ]
+}

@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<file>
+    <fileFormat>xml</fileFormat>
+    <fileType>lexicon</fileType>
+    <filePurpose>product</filePurpose>
+    <fileManu>SurreyLabs</fileManu>
+    <fileProduct>OpenHES Gateway</fileProduct>
+    <fileProductRefID>123</fileProductRefID>
+    <fileCoverage>partial</fileCoverage>
+    <fileStatus>initial</fileStatus>
+    <fileVersion>v0.0.1</fileVersion>
+    <fileSummaryDescription>Two controlled targets, both denied by default, opened by the authorization service</fileSummaryDescription>
+    <fileCreatedDate>2026-09-14</fileCreatedDate>
+    <fileRevisionDate>2026-09-14</fileRevisionDate>
+
+    <overallProcess versionNumber="1.0.0" addrPoint="pa" transCode="lx" descriptiveName="lexicon">
+
+        <lexiconType versionNumber="1.0.0" addrPoint="pa" transCode="ob" descriptiveName="object">
+
+            <objectType versionNumber="1.0.0" addrPoint="pa" transCode="bm" descriptiveName="bindingMap">
+
+                <data versionNumber="1.0.0" addrPoint="pd" transCode="rq" descriptiveName="requirementMandatory">ma</data>
+                <data versionNumber="1.0.0" addrPoint="pd" transCode="si" descriptiveName="single">no</data>
+
+                <!-- Target A: light power. authorType starts at 'bk' (deny by default);
+                     the authorization service opens it with 'fl' for permitted classes.
+                     Its authorType address is /lx/ob/bm/ot1/op1/at. -->
+                <operationTable versionNumber="1.0.0" addrPoint="na" transCode="ot1" descriptiveName="operationTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ri" descriptiveName="refId">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="en" descriptiveName="enable">en</data>
+                    <inputs versionNumber="1.0.0" addrPoint="na" transCode="ip1" descriptiveName="inputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">6</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="so" descriptiveName="sourceObject">/lx/ob/uo/ui/ud/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="co" descriptiveName="condition">pt</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="at" descriptiveName="authorType">fl</data>
+                    </inputs>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="operation">gt</data>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi1" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">va</data>
+                    </inputParameters>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi2" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">0</data>
+                    </inputParameters>
+                    <outputs versionNumber="1.0.0" addrPoint="na" transCode="op1" descriptiveName="outputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="dl" descriptiveName="deviceList">2</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="do" descriptiveName="destObject">/lx/ob/uo/li/ll/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="at" descriptiveName="authorType">bk</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="me" descriptiveName="method">up</data>
+                    </outputs>
+                </operationTable>
+
+                <!-- Target B: the SAME light's brightness. The profile's device
+                     2 (the WiZ bulb) carries both li/ll/da/cv and li/ll/aa/cv,
+                     so this row differs from Target A only in destObject;
+                     authType address /lx/ob/bm/ot2/op1/at. (Annex D's example
+                     puts a second appliance here; the product profile has only
+                     one, so the same bulb's brightness object stands in.) -->
+                <operationTable versionNumber="1.0.0" addrPoint="na" transCode="ot2" descriptiveName="operationTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ri" descriptiveName="refId">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="en" descriptiveName="enable">en</data>
+                    <inputs versionNumber="1.0.0" addrPoint="na" transCode="ip1" descriptiveName="inputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">7</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="so" descriptiveName="sourceObject">/lx/ob/uo/ui/ud/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="co" descriptiveName="condition">pt</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="at" descriptiveName="authorType">fl</data>
+                    </inputs>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="operation">gt</data>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi1" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">va</data>
+                    </inputParameters>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi2" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">0</data>
+                    </inputParameters>
+                    <outputs versionNumber="1.0.0" addrPoint="na" transCode="op1" descriptiveName="outputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="dl" descriptiveName="deviceList">2</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="do" descriptiveName="destObject">/lx/ob/uo/li/ll/aa/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="at" descriptiveName="authorType">bk</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="me" descriptiveName="method">up</data>
+                    </outputs>
+                </operationTable>
+
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at1" descriptiveName="addressingTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">6</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
+                </addressingTable>
+                <!-- Not in the product profile: the demo's second button
+                     ('button 2', di=7), as in tests/bm_auth_two_buttons.xml. -->
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at2" descriptiveName="addressingTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">7</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
+                </addressingTable>
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at3" descriptiveName="addressingTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex">7</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
+                </addressingTable>
+
+            </objectType>
+
+        </lexiconType>
+
+    </overallProcess>
+
+</file>

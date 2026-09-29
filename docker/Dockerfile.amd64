@@ -1,0 +1,53 @@
+# =============================================================================
+# Dockerfile.amd64
+#
+# Native amd64 build container for Ubuntu 26.04.
+# Installs all required development libraries and build tools directly via apt,
+# so you don't have to pollute your host system with project-specific deps.
+#
+# Usage:
+#   docker build -t openhes-amd64 -f docker/Dockerfile.amd64 .
+#   docker run --rm -it -v "$(pwd):/src" openhes-amd64
+#
+#   # Or run commands directly:
+#   docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" openhes-amd64 \
+#       cmake -B build -GNinja
+#   docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd):/src" openhes-amd64 \
+#       cmake --build build
+# =============================================================================
+
+FROM ubuntu:26.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ---------------------------------------------------------------------------
+# Install build tools and all required development libraries natively.
+# ---------------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        build-essential \
+        cmake \
+        ninja-build \
+        pkg-config \
+        curl \
+        ca-certificates \
+        file \
+        libglib2.0-dev \
+        libhiredis-dev \
+        libxml2-dev \
+        libbluetooth-dev \
+        zlib1g-dev \
+        libssl-dev \
+        uuid-dev \
+        libelf-dev \
+        libpcre2-dev \
+        libbz2-dev \
+        liblzma-dev \
+        libmount-dev \
+        libblkid-dev \
+        libselinux1-dev \
+        libsepol-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /src

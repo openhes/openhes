@@ -1,0 +1,53 @@
+{
+  "_comment": [
+    "Authorization policy for the two-button demo WITH the proof gate (18012-3",
+    "11.2.4). Read-only in the gateway: these tables are memoryType 'sp' (Secret",
+    "Programmed) -- secret, preset, and not changeable over HES-CLME.",
+    "",
+    "Identical to auth_policy_two_buttons.json -- same classes, credential, groups",
+    "and permissions -- plus one addition: the 'proofRequired' section.",
+    "",
+    "18012-3 has nowhere to say 'this operation must be accompanied by a proof of",
+    "the sender's identity'. Table 68 (permissionService) says what a class may do,",
+    "never how it must prove itself, and Table 64 (credentials) has no field for a",
+    "public key. So the requirement is declared here, in this document's own",
+    "section, rather than by inventing a transCode or an extra key inside a",
+    "standard row.",
+    "",
+    "Each entry names a binding-map authorType address ('at') and the public ID",
+    "('pi', 64 hex characters) that the proof must demonstrate. Presence makes a",
+    "proof MANDATORY for that target -- forgetting to send one is a denial, not a",
+    "silent pass. Absence means nothing changes.",
+    "",
+    "The requirement is a SECOND gate, on top of the permission check: a message",
+    "must still carry a credential the permission tables accept. The proof is not",
+    "an alternative way to be authorized."
+  ],
+
+  "authClasses": [
+    { "ci": 1, "fn": "parent", "st": "au", "ti": 1, "pi": 10, "cr": 1 }
+  ],
+
+  "authIdentities": [
+    { "id": 1, "ta": "dv", "di": 6 }
+  ],
+
+  "credentials": [
+    { "id": 1, "cm": "pw", "cp": "tl", "ci": "parent-key", "ss": 1785612000, "cv": "ye" }
+  ],
+
+  "permissionGroups": [
+    { "pi": 10, "pt": "ps", "pr": 101 }
+  ],
+
+  "permissionServices": [
+    { "pi": 101, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot1/op1/at", "vn": "fl" }
+  ],
+
+  "proofRequired": [
+    {
+      "at": "/lx/ob/bm/ot1/op1/at",
+      "pi": "943d607d1f4c645d9a356e042873ec41aa7d95fd6c0a373e9e7639cc2dbef97d"
+    }
+  ]
+}

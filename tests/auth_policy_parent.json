@@ -1,0 +1,39 @@
+{
+  "_comment": [
+    "Same policy, but the PARENT is the active user (st=au) and the kid is not.",
+    "Identical permission tables: only the class statuses changed, which is the",
+    "whole mechanism -- edit the status, restart, and a different set of",
+    "permission rows applies. Here the parent may drive both targets.",
+    "Compare with auth_policy_kid.json: the permissionServices rows are the same,",
+    "only st differs on the classes."
+  ],
+
+  "authClasses": [
+    { "ci": 1, "fn": "parent", "st": "au", "ti": 1, "pi": 10, "cr": 1 },
+    { "ci": 2, "fn": "kid",    "st": "na", "ti": 2, "pi": 20, "cr": 2 }
+  ],
+
+  "authIdentities": [
+    { "id": 1, "ta": "dv", "di": 7 },
+    { "id": 2, "ta": "dv", "di": 6 }
+  ],
+
+  "credentials": [
+    { "id": 1, "cm": "pw", "cp": "tl", "ci": "parent-secret", "ss": 1785612000, "cv": "ye" },
+    { "id": 2, "cm": "pw", "cp": "tl", "ci": "kid-secret",    "ss": 1785612000, "cv": "ye" }
+  ],
+
+  "permissionGroups": [
+    { "pi": 10, "pt": "ps", "pr": 101 },
+    { "pi": 10, "pt": "ps", "pr": 102 },
+    { "pi": 20, "pt": "ps", "pr": 201 },
+    { "pi": 20, "pt": "ps", "pr": 202 }
+  ],
+
+  "permissionServices": [
+    { "pi": 101, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot1/op1/at", "vn": "fl" },
+    { "pi": 102, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot2/op1/at", "vn": "fl" },
+    { "pi": 201, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot1/op1/at", "vn": "fl" },
+    { "pi": 202, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot2/op1/at", "vn": "bk" }
+  ]
+}

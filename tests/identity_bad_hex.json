@@ -1,0 +1,13 @@
+{
+  "_comment": [
+    "Negative fixture: 'pi' is 64 characters but ends in 'Z', which is not a",
+    "hex digit. As with identity_bad_short.json the value is refused for being",
+    "unusable rather than for failing an equality test -- silently accepting it",
+    "would accept 4 bits of nonsense as an identity."
+  ],
+
+  "gatewayIdentity": {
+    "pi": "5e3a7c1d9b04f826a1c5d7e90f3b2a4c8d6e1f0b7a392c5d8e4f6a1b0c2d3e4Z",
+    "fp": "9c41d2e83a7b0f5c6d1e8a9b4f203c7d5a6b1e9f0c8d3a7b2e5f4c1d9a8b7e6f"
+  }
+}

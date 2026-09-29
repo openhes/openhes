@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<file>
+    <fileFormat>xml</fileFormat>
+    <fileType>lexicon</fileType>
+    <filePurpose>product</filePurpose>
+    <fileManu>SurreyLabs</fileManu>
+    <fileProduct>OpenHES Gateway</fileProduct>
+    <fileProductRefID>123</fileProductRefID>
+    <fileCoverage>partial</fileCoverage>
+    <fileStatus>initial</fileStatus>
+    <fileVersion>v0.0.1</fileVersion>
+    <fileSummaryDescription>Two buttons drive the same light; authorization decides which one may</fileSummaryDescription>
+    <fileCreatedDate>2026-09-14</fileCreatedDate>
+    <fileRevisionDate>2026-09-14</fileRevisionDate>
+
+    <overallProcess versionNumber="1.0.0" addrPoint="pa" transCode="lx" descriptiveName="lexicon">
+
+        <lexiconType versionNumber="1.0.0" addrPoint="pa" transCode="ob" descriptiveName="object">
+
+            <objectType versionNumber="1.0.0" addrPoint="pa" transCode="bm" descriptiveName="bindingMap">
+
+                <data versionNumber="1.0.0" addrPoint="pd" transCode="rq" descriptiveName="requirementMandatory">ma</data>
+                <data versionNumber="1.0.0" addrPoint="pd" transCode="si" descriptiveName="single">no</data>
+
+                <!-- Button 1 (di=6). Its input declares accompanyOperation 'au', so the
+                     accompanied information on the incoming message ('ci' credential,
+                     'un' user name) must be authorized before this row may output.
+                     The output carries no authorType default: the decision is made per
+                     message, not pre-computed into the row. -->
+                <operationTable versionNumber="1.0.0" addrPoint="na" transCode="ot1" descriptiveName="operationTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ri" descriptiveName="refId">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="en" descriptiveName="enable">en</data>
+                    <inputs versionNumber="1.0.0" addrPoint="na" transCode="ip1" descriptiveName="inputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">6</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="so" descriptiveName="sourceObject">/lx/ob/uo/ui/ud/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="co" descriptiveName="condition">pt</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ap" descriptiveName="accompanyOperation">au</data>
+                    </inputs>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="operation">gt</data>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi1" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">va</data>
+                    </inputParameters>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi2" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">0</data>
+                    </inputParameters>
+                    <outputs versionNumber="1.0.0" addrPoint="na" transCode="op1" descriptiveName="outputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="dl" descriptiveName="deviceList">2</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="do" descriptiveName="destObject">/lx/ob/uo/li/ll/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="me" descriptiveName="method">up</data>
+                    </outputs>
+                </operationTable>
+
+                <!-- Button 2 (di=7): its own button, but the SAME destination. The
+                     credential travels with each message, so 'at' could never tell the
+                     two senders apart. That is exactly why this row is gated per
+                     message instead. -->
+                <operationTable versionNumber="1.0.0" addrPoint="na" transCode="ot2" descriptiveName="operationTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ri" descriptiveName="refId">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="en" descriptiveName="enable">en</data>
+                    <inputs versionNumber="1.0.0" addrPoint="na" transCode="ip1" descriptiveName="inputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">7</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="so" descriptiveName="sourceObject">/lx/ob/uo/ui/ud/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="co" descriptiveName="condition">pt</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ap" descriptiveName="accompanyOperation">au</data>
+                    </inputs>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="op" descriptiveName="operation">gt</data>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi1" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">va</data>
+                    </inputParameters>
+                    <inputParameters versionNumber="1.0.0" addrPoint="na" transCode="pi2" descriptiveName="inputParameters">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="ip" descriptiveName="inputParameter">0</data>
+                    </inputParameters>
+                    <outputs versionNumber="1.0.0" addrPoint="na" transCode="op1" descriptiveName="outputs">
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="dl" descriptiveName="deviceList">2</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="do" descriptiveName="destObject">/lx/ob/uo/li/ll/da/cv</data>
+                        <data versionNumber="1.0.0" addrPoint="pd" transCode="me" descriptiveName="method">up</data>
+                    </outputs>
+                </operationTable>
+
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at1" descriptiveName="addressingTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">6</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
+                </addressingTable>
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at2" descriptiveName="addressingTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">7</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex">1</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
+                </addressingTable>
+                <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at3" descriptiveName="addressingTable">
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="mi" descriptiveName="moduleRefIndex">2</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ni" descriptiveName="netRefIndex">7</data>
+                    <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
+                </addressingTable>
+
+            </objectType>
+
+        </lexiconType>
+
+    </overallProcess>
+
+</file>

@@ -1,0 +1,41 @@
+{
+  "_comment": [
+    "Gateway identity -- identification service (18012-3 11.2.2).",
+    "'fp' is the ROOT of the identity: memoryType 'sp' (Table 43), secret,",
+    "obscured, never sent on the bus. In a product it would be factory-written",
+    "to a secure element; here the file stands in for that. It must be a 256-bit",
+    "TRUE RANDOM number, and it is also the seed the gateway's signing key pair",
+    "is derived from -- which is what makes the public ID verifiable.",
+    "'pi' (Table 41, 'ro') is DERIVED from 'fp', not provisioned: it is the X",
+    "coordinate of that key pair's public point, 64 hex characters. It is public",
+    "and STATIONARY -- the same for the life of the gateway, because the",
+    "derivation is deterministic.",
+    "Stating 'pi' here is OPTIONAL, but if you do it must equal the derived",
+    "value or the gateway refuses to start. The derived value is logged at",
+    "startup (it is public), so it can be pasted in from there.",
+    "The 'pi' below IS that derived value for the 'fp' above. Keeping it here",
+    "documents what the derivation produces AND pins it: if the KDF salt or",
+    "info string ever changes, this fixture fails loudly instead of silently",
+    "giving every gateway a different public ID.",
+    "These are DEMO values, not real secrets. For a real one, paste in your own",
+    "64 hex characters for 'fp' (e.g. openssl rand -hex 32), then chmod 600."
+  ],
+
+  "gatewayIdentity": {
+    "fp": "9c41d2e83a7b0f5c6d1e8a9b4f203c7d5a6b1e9f0c8d3a7b2e5f4c1d9a8b7e6f",
+    "pi": "943d607d1f4c645d9a356e042873ec41aa7d95fd6c0a373e9e7639cc2dbef97d",
+    "vr": "1.0.0",
+    "hs": "1",
+    "pd": "Demo gateway",
+    "ch": "sh",
+
+    "_metaData_comment": [
+      "Table 44 metaData, memoryType 'po' (post-market): the installer's risk",
+      "assessment of HES-CLME for this installation. 0 = not initialized."
+    ],
+    "vl": 2,
+    "il": 3,
+    "ll": 2,
+    "rl": 6
+  }
+}

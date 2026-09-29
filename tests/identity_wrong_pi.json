@@ -1,0 +1,14 @@
+{
+  "_comment": [
+    "Negative fixture: 'pi' is present but is NOT the public key derived from",
+    "'fp'. The gateway must refuse to start rather than advertise a public ID",
+    "that no challenge could ever be verified against -- the failure would",
+    "otherwise be invisible until something tried to authenticate it.",
+    "'fp' below is the same demo value as in identity.json."
+  ],
+
+  "gatewayIdentity": {
+    "pi": "0000000000000000000000000000000000000000000000000000000000000000",
+    "fp": "9c41d2e83a7b0f5c6d1e8a9b4f203c7d5a6b1e9f0c8d3a7b2e5f4c1d9a8b7e6f"
+  }
+}

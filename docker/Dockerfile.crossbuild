@@ -1,0 +1,132 @@
+# =============================================================================
+# Dockerfile.crossbuild
+#
+# Cross-compilation container for Raspberry Pi 64-bit (aarch64).
+# Uses gcc-aarch64-linux-gnu toolchain. ARM64 libraries are downloaded
+# directly from ports.ubuntu.com and extracted (no apt/dpkg postinst
+# headaches).  Much more stable than QEMU-emulated gcc.
+#
+# Usage (local dev):
+#   docker build -t openhes-cross -f docker/Dockerfile.crossbuild .
+#   docker run --rm -it -v "$(pwd):/src" openhes-cross
+#
+# Usage (CI/CD):
+#   docker run --rm -v "$(pwd):/src" openhes-cross \
+#       make arm64-gen arm64-build
+# =============================================================================
+
+FROM ubuntu:24.04 AS base
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# ---------------------------------------------------------------------------
+# 1. Install native amd64 toolchain + build tools
+# ---------------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        gcc-aarch64-linux-gnu \
+        g++-aarch64-linux-gnu \
+        binutils-aarch64-linux-gnu \
+        build-essential \
+        cmake \
+        ninja-build \
+        pkg-config \
+        curl \
+        ca-certificates \
+        file \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# ---------------------------------------------------------------------------
+# 2. Configure arm64 repos and add architecture
+# ---------------------------------------------------------------------------
+RUN rm -f /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources \
+    && { \
+        echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu noble main restricted universe multiverse"; \
+        echo "deb [arch=amd64] http://archive.ubuntu.com/ubuntu noble-updates main restricted universe multiverse"; \
+        echo "deb [arch=amd64] http://security.ubuntu.com/ubuntu noble-security main restricted universe multiverse"; \
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble main restricted universe multiverse"; \
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-updates main restricted universe multiverse"; \
+        echo "deb [arch=arm64] http://ports.ubuntu.com/ubuntu-ports noble-security main restricted universe multiverse"; \
+    } > /etc/apt/sources.list \
+    && dpkg --add-architecture arm64
+
+# ---------------------------------------------------------------------------
+# 3. Download ARM64 .deb packages via apt-get download (no postinst runs)
+#    and extract headers + libraries into the cross-compiler sysroot.
+# ---------------------------------------------------------------------------
+WORKDIR /tmp/arm64-libs
+
+RUN apt-get update \
+    # chown to _apt so apt-get download can run in its sandboxed mode.
+    # Without this, apt falls back to unsandboxed downloads and emits
+    # "Download is performed unsandboxed as root" warnings for every .deb.
+    # The warnings are harmless but noisy; this keeps the build log clean.
+    && chown _apt /tmp/arm64-libs \
+    && for pkg in \
+        libc6-dev:arm64 libstdc++-14-dev:arm64 linux-libc-dev:arm64 \
+        libglib2.0-dev:arm64 libglib2.0-0t64:arm64 libffi-dev:arm64 \
+        libhiredis-dev:arm64 \
+        libxml2-dev:arm64 \
+        libbluetooth-dev:arm64 \
+        zlib1g-dev:arm64 libssl-dev:arm64 uuid-dev:arm64 \
+        libelf-dev:arm64 libpcre2-dev:arm64 libbz2-dev:arm64 liblzma-dev:arm64 \
+        libmount-dev:arm64 libmount1:arm64 \
+        libblkid-dev:arm64 libblkid1:arm64 \
+        libselinux1-dev:arm64 libselinux1:arm64 libsepol-dev:arm64 \
+        libffi8:arm64 libpcre2-8-0:arm64 zlib1g:arm64; \
+    do \
+        echo "Downloading $pkg ..."; \
+        apt-get download "$pkg"; \
+    done \
+    && echo "Extracting packages..." \
+    && mkdir -p sysroot \
+    && for f in *.deb; do dpkg-deb -x "$f" sysroot/ 2>/dev/null || true; done \
+    && echo "Done extracting."
+
+# ---------------------------------------------------------------------------
+# 3. Move ARM64 headers + libraries into the cross-compiler sysroot
+# ----------------------------------------------------------------------------
+RUN mkdir -p /usr/aarch64-linux-gnu/include /usr/lib/aarch64-linux-gnu /lib/aarch64-linux-gnu \
+    && cp -a sysroot/usr/include/. /usr/aarch64-linux-gnu/include/ 2>/dev/null || true \
+    && cp -a sysroot/usr/lib/aarch64-linux-gnu/. /usr/lib/aarch64-linux-gnu/ 2>/dev/null || true \
+    && cp -a sysroot/lib/aarch64-linux-gnu/. /lib/aarch64-linux-gnu/ 2>/dev/null || true \
+    # glib arch-specific headers
+    && if [ -d sysroot/usr/lib/aarch64-linux-gnu/glib-2.0 ]; then \
+        mkdir -p /usr/lib/aarch64-linux-gnu/glib-2.0; \
+        cp -a sysroot/usr/lib/aarch64-linux-gnu/glib-2.0/. /usr/lib/aarch64-linux-gnu/glib-2.0/; \
+    fi \
+    # pkg-config .pc files
+    && if [ -d sysroot/usr/lib/aarch64-linux-gnu/pkgconfig ]; then \
+        mkdir -p /usr/lib/aarch64-linux-gnu/pkgconfig; \
+        cp -a sysroot/usr/lib/aarch64-linux-gnu/pkgconfig/. /usr/lib/aarch64-linux-gnu/pkgconfig/; \
+    fi \
+    && rm -rf /tmp/arm64-libs
+
+# ---------------------------------------------------------------------------
+# 4. Install native libglib2.0-dev (amd64) for pkg-config + glib-genmarshal
+# ---------------------------------------------------------------------------
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        libglib2.0-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && mkdir -p /usr/lib/aarch64-linux-gnu/pkgconfig
+
+# Create a symlink for aarch64-linux-gnu-pkg-config
+#
+# The gcc-aarch64-linux-gnu toolchain package does not ship a
+# cross-prefixed pkg-config binary.  However, the CMake toolchain file
+# (cmake/pi_toolchain_64.cmake) sets PKG_CONFIG_EXECUTABLE to
+# "aarch64-linux-gnu-pkg-config" so that CMake's pkg_check_modules()
+# uses the correct .pc files via PKG_CONFIG_LIBDIR (pointed at the
+# arm64 sysroot).  Since pkg-config itself is just a text processor --
+# it reads .pc files and emits compiler flags, it does not run or
+# inspect binaries -- the native amd64 /usr/bin/pkg-config works
+# perfectly for this purpose.  The symlink is a no-op if the
+# gcc-aarch64-linux-gnu package ever ships its own wrapper.
+RUN if ! command -v aarch64-linux-gnu-pkg-config &>/dev/null; then \
+        ln -sf /usr/bin/pkg-config /usr/bin/aarch64-linux-gnu-pkg-config; \
+    fi
+
+WORKDIR /src

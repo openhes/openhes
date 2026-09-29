@@ -1,0 +1,49 @@
+{
+  "gatewayMetadata": {
+    "manufacturer": "SurreyLabs",
+    "productBundle": "xyz",
+    "gatewayId": "HES-GW-2026-99A1"
+  },
+  "modules": [
+    {
+      "moduleType": "sm",
+      "moduleRefIndex": 1,
+      "serviceModuleType": "id",
+      "deviceProfiles": []
+    },
+    {
+      "moduleType": "hi",
+      "moduleRefIndex": 1,
+      "networkType": "BLE",
+      "deviceProfiles": [
+        {
+          "deviceIndex": 6,
+          "netRefIndex": 1,
+          "deviceRole": "SensorTag_Node",
+          "expectedHardware": "TI_SensorTag_CC2650",
+          "objects": [
+            { "lexiconPath": "/lx/ob/uo/ui/ud/da/cv", "access": "r" },
+            { "lexiconPath": "/lx/ob/uo/hv/ts/as/cv", "access": "r" }
+          ]
+        }
+      ]
+    },
+    {
+      "moduleType": "hi",
+      "moduleRefIndex": 2,
+      "networkType": "WiFi",
+      "deviceProfiles": [
+        {
+          "deviceIndex": 2,
+          "netRefIndex": 7,
+          "deviceRole": "Primary_Lighting_Actuator",
+          "expectedHardware": "Philips_WiZ_A19",
+          "objects": [
+            { "lexiconPath": "/lx/ob/uo/li/ll/da/cv", "access": "rw" },
+            { "lexiconPath": "/lx/ob/uo/li/ll/aa/cv", "access": "rw" }
+          ]
+        }
+      ]
+    }
+  ]
+}

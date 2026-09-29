@@ -1,0 +1,42 @@
+{
+  "_comment": [
+    "Authorization policy for the two-button demo (18012-3 11.2.4).",
+    "Read-only in the gateway: these tables are memoryType 'sp' (Secret",
+    "Programmed) -- secret, preset, and not changeable over HES-CLME.",
+    "Edit this file and restart to change authorization.",
+    "",
+    "The demo: two buttons both drive the SAME light, so the binding map's",
+    "authorType ('at') cannot tell the senders apart -- it is a property of the",
+    "row. Each button's message therefore carries a credential ('ci'), and the",
+    "row's input declares ap='au', so the decision is made per message.",
+    "",
+    "This policy grants 'parent' a permission for the row whose authorType is",
+    "/lx/ob/bm/ot1/op1/at (button 1, di=6) but grants nothing for button 2's row",
+    "(/lx/ob/bm/ot2/op1/at). Absence of a permission fails closed, so button 1",
+    "may turn on the light and button 2 may not -- even though button 2 presents",
+    "a perfectly valid credential. Authorization is per target, not merely",
+    "'is this password correct'.",
+    "",
+    "The credential below is a demo secret. Never log or expose credInfo."
+  ],
+
+  "authClasses": [
+    { "ci": 1, "fn": "parent", "st": "au", "ti": 1, "pi": 10, "cr": 1 }
+  ],
+
+  "authIdentities": [
+    { "id": 1, "ta": "dv", "di": 6 }
+  ],
+
+  "credentials": [
+    { "id": 1, "cm": "pw", "cp": "tl", "ci": "parent-key", "ss": 1785612000, "cv": "ye" }
+  ],
+
+  "permissionGroups": [
+    { "pi": 10, "pt": "ps", "pr": 101 }
+  ],
+
+  "permissionServices": [
+    { "pi": 101, "st": "au", "di": 2, "lo": "/lx/ob/bm/ot1/op1/at", "vn": "fl" }
+  ]
+}

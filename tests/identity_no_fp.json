@@ -1,0 +1,11 @@
+{
+  "_comment": [
+    "Negative fixture: no 'fp' at all. The secret fingerprint cannot be",
+    "defaulted or generated on the fly (that would break 'pi'/'fp'",
+    "stationarity), so a document without it must be refused."
+  ],
+
+  "gatewayIdentity": {
+    "pi": "5e3a7c1d9b04f826a1c5d7e90f3b2a4c8d6e1f0b7a392c5d8e4f6a1b0c2d3e4f"
+  }
+}
