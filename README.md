@@ -61,7 +61,6 @@ flowchart LR
     WIFI -.->|"slice: di, address"| DM
 ```
 
----
 
 ## Prerequisites
 
@@ -173,7 +172,6 @@ the network time-zone lookup entirely (useful on a machine with no Internet), an
 `--no-authz` on `sm core` disables every authorization gate for the run — the
 demo maps declare none, so it changes nothing unless you load a map that does.
 
----
 
 ## Repository layout
 
@@ -206,7 +204,6 @@ tests/              unit tests and the fixtures they use (binding maps, profile,
 Everything under `tests/` doubles as documentation: the XML binding maps are the
 most readable description of what the system can route.
 
----
 
 ## Where to look next
 
@@ -222,12 +219,14 @@ The code is heavily commented, and the headers are the reference for the design:
 | `src/modules/core/app.lua` | the appService contract, in Lua |
 | `tests/bm_appservice_button.xml` | the smallest useful binding map: button → app → light |
 
+
 ## Status
 
 This is a proof of concept, not a product: the identity document and the device
 manifest are provisioned by hand, and the demo fixtures hold demo values. It is
 complete enough to run the whole path — a real button on one network driving a
 real lamp on another — and to be read as a worked example of the standards.
+
 
 ## Licence
 
