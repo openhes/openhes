@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug ohmg",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build-amd64/ohmg",
+      "args": ["dm", "--profile", "./product.json"],
+      "stopAtEntry": false,
+      "cwd": "${workspaceFolder}/tests",
+      "environment": [],
+      "externalConsole": false
+    }
+  ]
+}

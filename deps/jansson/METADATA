@@ -1,0 +1,15 @@
+name = "jansson"
+description = "JSON parser."
+
+[third_party]
+version = "v2.15.0"
+license_type = "NOTICE"
+
+[third_party.url]
+type = "GIT"
+value = "https://github.com/akheron/jansson"
+
+[third_party.last_upgrade_date]
+year = 2026
+month = 1
+day = 24

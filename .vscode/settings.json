@@ -1,0 +1,18 @@
+{
+    "C_Cpp.default.includePath": [
+        "${workspaceFolder}/deps/argtable3",
+        "${workspaceFolder}/deps/bstrlib",
+        "${workspaceFolder}/deps/cwalk/include",
+        "${workspaceFolder}/deps/jansson/src",
+        "${workspaceFolder}/deps/libuv/include",
+        "${workspaceFolder}/deps/libxml2/include",
+        "${workspaceFolder}/deps/log",
+        "${workspaceFolder}/deps/lua/src",
+        "${workspaceFolder}/deps/miniz",
+        "${workspaceFolder}/deps/nanomq/nng/include",
+        "${workspaceFolder}/build*/",
+        "${workspaceFolder}/build*/deps/libxml2",
+        "${workspaceFolder}/build*/deps/jansson/include",
+        "${workspaceFolder}/src"
+    ]
+}
