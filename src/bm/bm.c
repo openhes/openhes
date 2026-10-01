@@ -713,7 +713,14 @@ static void evaluate_op(binding_map_t* bm, hes_bus_t* bus, bm_operation_t* op)
         return;  // no change -- don't re-fire
     }
 
-    log_error("op ri=%u (%s %.2f, %.2f) = %.2f\n", op->ref_id, op->operation, a, b, result);
+    // (a, b) are the built-in operations' operands. An appService row has none --
+    // the app computes the result -- so it prints just its operation and result
+    // rather than two numbers that mean nothing for it.
+    if (strcmp(op->operation, "ap") == 0) {
+        log_info("op ri=%u (ap) = %.2f", op->ref_id, result);
+    } else {
+        log_info("op ri=%u (%s %.2f, %.2f) = %.2f", op->ref_id, op->operation, a, b, result);
+    }
 
     // ---- the output gates, BEFORE any state is touched ----
     //
@@ -764,7 +771,9 @@ static void evaluate_op(binding_map_t* bm, hes_bus_t* bus, bm_operation_t* op)
         hes_msg_set_payload_str(&msg, buf);
         hes_bus_send(bus, &msg);
 
-        log_trace("PUT %s = %s (deviceList=%u)", op->out_dest_object, buf, op->out_device_index);
+        // log_info, like the row trace above: "row evaluated -> PUT sent" is the
+        // pair worth reading together, so -v shows the whole story.
+        log_info("PUT %s = %s (deviceList=%u)", op->out_dest_object, buf, op->out_device_index);
     }
 }
 
@@ -869,11 +878,11 @@ int bm_is_declared_destination(const binding_map_t* bm, const char* path, uint32
 
 void bm_controller_start(binding_map_t* bm, hes_bus_t* bus)
 {
-    // A record of (path, deviceIndex) pairs we've already subscribed to.
-    // The same source object often feeds several operation rows — we only
-    // need one subscription per (object, device), but NOT one per path:
-    // two devices may expose the same object path, and each needs its own
-    // subscription.
+    // A record of the (path, deviceIndex) pairs we have already subscribed to.
+    // The same source object often feeds several operation rows, so one
+    // subscription per (object, device) is enough. One subscription per path is
+    // not enough: two devices may expose the same object path, and each one
+    // needs its own subscription.
     typedef struct bm_sub_key {
         char path[HES_PATH_MAX];
         uint32_t device_index;
@@ -884,19 +893,19 @@ void bm_controller_start(binding_map_t* bm, hes_bus_t* bus)
     for (int i = 0; i < bm->n_ops; i++) {
         bm_operation_t* op = &bm->ops[i];
         if (!op->enabled) {
-            // Skips operation groups whose en (enable) flag isn't set —
-            // disabled rules shouldn't cause subscriptions.
+            // Skip operation groups whose 'en' (enable) flag is not set. A
+            // disabled rule must not cause a subscription.
             continue;
         }
 
         for (int j = 0; j < op->n_inputs; j++) {
             bm_input_t* in = &op->inputs[j];
 
-            // An input with no source path is an internal chain: its value is
-            // produced by another operation's output inside this same binding
-            // map (the 'it' internal-process values). There's no external
-            // module to subscribe to, so nothing to do — the processor fills
-            // those when the upstream operation fires.
+            // An input with no source path is an internal chain: its value comes
+            // from another operation's output inside this same binding map (the
+            // 'it' internal-process values). There is no external module to
+            // subscribe to, so there is nothing to do here. The processor fills
+            // those values when the upstream operation fires.
             if (in->source_object[0] == '\0') {
                 continue;
             }
@@ -915,11 +924,11 @@ void bm_controller_start(binding_map_t* bm, hes_bus_t* bus)
                 continue;
             }
 
-            // Looks up which module owns that device in the addressingTable. We
-            // only subscribe when the owner is an external module (hi HAN, wi
-            // WAN, or sm service module). If the device isn't in the table, or
-            // it's an internal process (it) / unknown, there's no remote
-            // publisher to talk to — skip.
+            // Look up which module owns that device in the addressingTable. A
+            // subscription is sent only when the owner is an external module
+            // (hi HAN, wi WAN, or sm service module). If the device is not in
+            // the table, or it is an internal process (it) or unknown, there is
+            // no remote publisher to talk to, so skip it.
             const bm_addr_t* addr = bm_find_addr(bm, in->device_index);
             if (!addr || addr->module_type == HES_MODTYPE_IT ||
                 addr->module_type == HES_MODTYPE_NONE) {
@@ -927,11 +936,11 @@ void bm_controller_start(binding_map_t* bm, hes_bus_t* bus)
             }
 
             // This is a HES-CLME subscribe sent out on the event bus. In the
-            // poc2 hub-and-leaf topology it goes to the interface modules so
-            // they'll start delivering event-reports for that object back to
-            // the core module.
+            // poc2 hub-and-leaf topology it goes to the interface modules, so
+            // they start delivering event reports for that object back to the
+            // core module.
             hes_clme_msg_t msg = {0};
-            msg.verb = HES_VERB_SUBSCRIBE;              // primitive action "subscribe" (18012-3 §7)
+            msg.verb = HES_VERB_SUBSCRIBE;              // primitive action "subscribe" (18012-3)
             msg.device_index = in->device_index;        // which device's object we care about
             hes_msg_set_path(&msg, in->source_object);  // the Lexicon path, e.g. /lx/ob/...
             hes_bus_send(bus, &msg);

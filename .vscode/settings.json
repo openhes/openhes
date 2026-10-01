@@ -9,6 +9,7 @@
         "${workspaceFolder}/deps/log",
         "${workspaceFolder}/deps/lua/src",
         "${workspaceFolder}/deps/miniz",
+        "${workspaceFolder}/deps/munit",
         "${workspaceFolder}/deps/nanomq/nng/include",
         "${workspaceFolder}/build*/",
         "${workspaceFolder}/build*/deps/libxml2",

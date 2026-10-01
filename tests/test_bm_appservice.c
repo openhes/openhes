@@ -1,12 +1,27 @@
 ////////////////////////////////////////////////////////////////////////////////
+// Copyright 2026 Tom G. Huang <tomghuang@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not
+// use this file except in compliance with the License. You may obtain a copy of
+// the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations under
+// the License.
+
+////////////////////////////////////////////////////////////////////////////////
 /// @file
 /// @brief Offline test for routing data through the customer-specific protected
 /// app (src/bm/bm.c app-service bridge).
 ///
 /// @details
 /// Scenarios:
-///   tests/bm_appservice_button.xml      -- one input: button (di=6) -> light
-///   tests/bm_appservice_multi_input.xml -- three inputs: button AND motion AND
+///   tests/data/bm_appservice_button.xml      -- one input: button (di=6) -> light
+///   tests/data/bm_appservice_multi_input.xml -- three inputs: button AND motion AND
 ///                                         darkness -> light
 ///
 ///   `op="ap"` is the appService operation (18012-3 Table 26): the OPERATION
@@ -29,6 +44,7 @@
 ///
 /// Build/run: see tests/CMakeLists.txt (ctest), or compile with the same
 /// includes/libs as test_bm.c.
+
 #include "../src/bm/bm.h"
 
 #include <nng/nng.h>
@@ -37,6 +53,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <munit.h>
+
 #include <string.h>
 
 #define BTN_PATH "/lx/ob/uo/ui/ud/da/cv"
@@ -102,29 +120,23 @@ static void cap_start(void)
 {
     memset(&g_bus, 0, sizeof(g_bus));
 
-    if (nng_pub0_open(&g_bus.pub_sock) != 0) {
-        fprintf(stderr, "test: nng_pub0_open failed\n");
-        exit(1);
-    }
-    if (nng_listen(g_bus.pub_sock, "inproc://test_bm_appservice", NULL, 0) != 0) {
-        fprintf(stderr, "test: inproc listen failed\n");
-        exit(1);
-    }
-
-    if (nng_sub0_open(&g_cap) != 0) {
-        fprintf(stderr, "test: nng_sub0_open failed\n");
-        exit(1);
-    }
-    if (nng_socket_set(g_cap, NNG_OPT_SUB_SUBSCRIBE, "", 0) != 0) {
-        fprintf(stderr, "test: subscribe-all failed\n");
-        exit(1);
-    }
-    if (nng_dial(g_cap, "inproc://test_bm_appservice", NULL, 0) != 0) {
-        fprintf(stderr, "test: inproc dial failed\n");
-        exit(1);
+    if (nng_pub0_open(&g_bus.pub_sock) != 0 ||
+        nng_listen(g_bus.pub_sock, "inproc://test_bm_appservice", NULL, 0) != 0 ||
+        nng_sub0_open(&g_cap) != 0 ||
+        nng_socket_set(g_cap, NNG_OPT_SUB_SUBSCRIBE, "", 0) != 0 ||
+        nng_dial(g_cap, "inproc://test_bm_appservice", NULL, 0) != 0) {
+        munit_error("cannot set up the capture bus");
     }
     nng_socket_set_ms(g_cap, NNG_OPT_RECVTIMEO, 300);
     nng_msleep(50);  // let the inproc subscription settle
+}
+
+static void capture_tear_down(void* fixture)
+{
+    (void)fixture;
+
+    nng_close(g_cap);
+    nng_close(g_bus.pub_sock);
 }
 
 static int expect_sends(int n, hes_clme_msg_t* out)
@@ -165,28 +177,21 @@ static int is_put(const hes_clme_msg_t* m, const char* path, uint32_t di, const 
            strcmp(m->payload, payload) == 0;
 }
 
-#define CHECK(cond)                                                         \
-    do {                                                                    \
-        if (!(cond)) {                                                      \
-            fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-            return 1;                                                       \
-        }                                                                   \
-    } while (0)
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Single-input appService: the row's operation is performed by the app.
-static int test_single_input(void)
+static MunitResult test_single_input(const MunitParameter params[], void* user_data)
 {
-    printf("--- appService with one input ---\n");
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, "bm_appservice_button.xml") == 0);
-    CHECK(bm.n_ops == 1);
-    CHECK(strcmp(bm.ops[0].operation, "ap") == 0);
-    CHECK(strcmp(bm.ops[0].inputs[0].source_object, BTN_PATH) == 0);
-    CHECK(bm.ops[0].out_device_index == 2);
-    CHECK(strcmp(bm.ops[0].out_dest_object, LIGHT_PATH) == 0);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_appservice_button.xml"), ==, 0);
+    munit_assert_int(bm.n_ops, ==, 1);
+    munit_assert_string_equal(bm.ops[0].operation, "ap");
+    munit_assert_string_equal(bm.ops[0].inputs[0].source_object, BTN_PATH);
+    munit_assert_uint(bm.ops[0].out_device_index, ==, 2);
+    munit_assert_string_equal(bm.ops[0].out_dest_object, LIGHT_PATH);
 
     bm.app_ctx = NULL;
     bm.app_operation = stub_app_operation;
@@ -195,53 +200,49 @@ static int test_single_input(void)
 
     hes_clme_msg_t msgs[MAX_CAPTURED];
     bm_controller_start(&bm, &g_bus);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(msgs[0].verb == HES_VERB_SUBSCRIBE);
-    CHECK(strcmp(msgs[0].path, BTN_PATH) == 0);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_uint(msgs[0].verb, ==, HES_VERB_SUBSCRIBE);
+    munit_assert_string_equal(msgs[0].path, BTN_PATH);
 
     // Button down: the engine asks the app for the operation's result.
     g_op_calls = 0;
     feed(&bm, BTN_PATH, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "5"));  // the app's 5, not the raw 1
-    CHECK(g_op_calls == 1);
-    CHECK(g_op_last_ref_id == 1);
-    CHECK(g_op_last_n_operands == 1);
-    CHECK(g_op_last_dis[0] == 6);
-    CHECK(g_op_last_values[0] == 1.0);
-    printf("test: button=1 -> app returned 5 -> PUT %s = %s\n", msgs[0].path, msgs[0].payload);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "5"));  // the app's 5, not the raw 1
+    munit_assert_int(g_op_calls, ==, 1);
+    munit_assert_uint(g_op_last_ref_id, ==, 1);
+    munit_assert_int(g_op_last_n_operands, ==, 1);
+    munit_assert_uint(g_op_last_dis[0], ==, 6);
+    munit_assert_double(g_op_last_values[0], ==, 1.0);
 
     // Button up.
     feed(&bm, BTN_PATH, 0.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "0"));
-    CHECK(g_op_calls == 2);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "0"));
+    munit_assert_int(g_op_calls, ==, 2);
 
     // Change detection still applies to the app's result.
     feed(&bm, BTN_PATH, 0.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    printf("test: unchanged app result -> no re-send\n");
-
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
-    return 0;
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+    return MUNIT_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Multi-input appService: one row, three inputs, AND logic in the app.
-static int test_multi_input(void)
+static MunitResult test_multi_input(const MunitParameter params[], void* user_data)
 {
-    printf("--- appService with three inputs ---\n");
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, "bm_appservice_multi_input.xml") == 0);
-    CHECK(bm.n_ops == 1);
-    CHECK(strcmp(bm.ops[0].operation, "ap") == 0);
-    CHECK(bm.ops[0].n_inputs == 3);
-    CHECK(bm.ops[0].inputs[0].device_index == 6);
-    CHECK(bm.ops[0].inputs[1].device_index == 7);
-    CHECK(bm.ops[0].inputs[2].device_index == 8);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_appservice_multi_input.xml"), ==, 0);
+    munit_assert_int(bm.n_ops, ==, 1);
+    munit_assert_string_equal(bm.ops[0].operation, "ap");
+    munit_assert_int(bm.ops[0].n_inputs, ==, 3);
+    munit_assert_uint(bm.ops[0].inputs[0].device_index, ==, 6);
+    munit_assert_uint(bm.ops[0].inputs[1].device_index, ==, 7);
+    munit_assert_uint(bm.ops[0].inputs[2].device_index, ==, 8);
 
     bm.app_ctx = NULL;
     bm.app_operation = stub_app_operation;
@@ -251,60 +252,57 @@ static int test_multi_input(void)
     hes_clme_msg_t msgs[MAX_CAPTURED];
     bm_controller_start(&bm, &g_bus);
     // One SUBSCRIBE per external input: button, motion, light level.
-    CHECK(expect_sends(3, msgs) == 3);
-    printf("test: controller subscribed to %d inputs\n", 3);
+    munit_assert_int(expect_sends(3, msgs), ==, 3);
 
     g_op_calls = 0;
 
     // Only one of three inputs known: the row must not fire yet.
     feed(&bm, BTN_PATH, 1.0);
-    CHECK(expect_sends(0, msgs) == 0);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
     feed(&bm, MOTION_PATH, 1.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    CHECK(g_op_calls == 0);
-    printf("test: partial inputs -> app not called\n");
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+    munit_assert_int(g_op_calls, ==, 0);
 
     // Third input arrives: the app now sees all three operands.
     feed(&bm, DARK_PATH, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "1"));
-    CHECK(g_op_calls == 1);
-    CHECK(g_op_last_ref_id == 2);
-    CHECK(g_op_last_n_operands == 3);
-    CHECK(g_op_last_dis[0] == 6);
-    CHECK(g_op_last_dis[1] == 7);
-    CHECK(g_op_last_dis[2] == 8);
-    CHECK(g_op_last_values[0] == 1.0);
-    CHECK(g_op_last_values[1] == 1.0);
-    CHECK(g_op_last_values[2] == 1.0);
-    printf("test: 3 operands reached the app -> PUT %s = %s\n", msgs[0].path, msgs[0].payload);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "1"));
+    munit_assert_int(g_op_calls, ==, 1);
+    munit_assert_uint(g_op_last_ref_id, ==, 2);
+    munit_assert_int(g_op_last_n_operands, ==, 3);
+    munit_assert_uint(g_op_last_dis[0], ==, 6);
+    munit_assert_uint(g_op_last_dis[1], ==, 7);
+    munit_assert_uint(g_op_last_dis[2], ==, 8);
+    munit_assert_double(g_op_last_values[0], ==, 1.0);
+    munit_assert_double(g_op_last_values[1], ==, 1.0);
+    munit_assert_double(g_op_last_values[2], ==, 1.0);
 
     // It stops being dark: the app re-decides with the new operand.
     feed(&bm, DARK_PATH, 0.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "0"));
-    CHECK(g_op_calls == 2);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "0"));
+    munit_assert_int(g_op_calls, ==, 2);
 
     // Same operands again: the app is not re-invoked.
     feed(&bm, DARK_PATH, 0.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    CHECK(g_op_calls == 2);
-    printf("test: unchanged operands -> app not re-invoked\n");
-
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
-    return 0;
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+    munit_assert_int(g_op_calls, ==, 2);
+    return MUNIT_OK;
 }
 
-int main(void)
-{
-    if (test_single_input() != 0) {
-        return 1;
-    }
-    if (test_multi_input() != 0) {
-        return 1;
-    }
+static MunitTest bm_appservice_tests[] = {
+  { (char*)"/single-input", test_single_input, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { (char*)"/multi-input", test_multi_input, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
 
-    printf("ALL TESTS PASSED\n");
-    return 0;
+static const MunitSuite bm_appservice_suite = {
+  (char*)"/bm-appservice", bm_appservice_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE
+};
+
+int main(int argc, char* argv[])
+{
+  return munit_suite_main(&bm_appservice_suite, NULL, argc, argv);
 }

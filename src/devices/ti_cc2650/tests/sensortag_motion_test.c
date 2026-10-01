@@ -246,7 +246,7 @@ static gboolean on_read_motion(gpointer user_data)
         printf("\033[4A");
         printf("--- MOTION DATA ---\n");
         printf("Accel (G):   X: %6.2f, Y: %6.2f, Z: %6.2f\n", accel[0], accel[1], accel[2]);
-        printf("Gyro (°/s):  X: %6.1f, Y: %6.1f, Z: %6.1f\n", gyro[0], gyro[1], gyro[2]);
+        printf("Gyro (deg/s):  X: %6.1f, Y: %6.1f, Z: %6.1f\n", gyro[0], gyro[1], gyro[2]);
         printf("Mag (uT):    X: %6.1f, Y: %6.1f, Z: %6.1f\n", mag[0], mag[1], mag[2]);
     }
 
@@ -398,7 +398,7 @@ int main(void)
     printf("Waiting for sensors to stabilize...\n");
     printf("--- MOTION DATA ---\n");
     printf("Accel (G):   X:   0.00, Y:   0.00, Z:   0.00\n");
-    printf("Gyro (°/s):  X:   0.0, Y:   0.0, Z:   0.0\n");
+    printf("Gyro (deg/s):  X:   0.0, Y:   0.0, Z:   0.0\n");
     printf("Mag (uT):    X:   0.0, Y:   0.0, Z:   0.0\n");
     printf("\033[4A");
     g_timeout_add(2000, on_read_motion, NULL);

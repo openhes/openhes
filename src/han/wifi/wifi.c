@@ -436,16 +436,15 @@ int han_wifi_main(const char* svc_rep,
             merge_slice(&reg, &upd);
         }
 
-        // Periodically republish ground truth per online device; track real
-        // presence (a bulb that stops answering is reported offline).
+        // Periodically republish ground truth per device; track real presence
+        // (a bulb that stops answering is reported offline, and one that answers
+        // again is reported back online -- devices that are offline are polled
+        // too, or nothing would ever bring them back).
         time_t now = time(NULL);
         if (now - last_poll >= POLL_PERIOD_SEC) {
             last_poll = now;
             for (int i = 0; i < n_devs; i++) {
                 int ridx = devs[i].reg_idx;
-                if (!reg.devices[ridx].online) {
-                    continue;
-                }
                 int reachable = 0;
                 for (int k = 0; k < reg.devices[ridx].n_objects; k++) {
                     const hes_dev_object_t* obj = &reg.devices[ridx].objects[k];
@@ -467,10 +466,10 @@ int han_wifi_main(const char* svc_rep,
                     }
                 }
                 // presence transition -> report to manifest service
-                if (!reachable && reg.devices[ridx].online) {
-                    reg.devices[ridx].online = 0;
-                    log_info("wifi: device di=%u not reachable -> offline, reporting",
-                             reg.devices[ridx].device_index);
+                if (reachable != reg.devices[ridx].online) {
+                    reg.devices[ridx].online = reachable;
+                    log_info("wifi: device di=%u -> %s, reporting",
+                             reg.devices[ridx].device_index, reachable ? "online" : "offline");
                     hes_mreg_report(&mreg, &reg);
                 }
             }

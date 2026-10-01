@@ -25,7 +25,7 @@
 #include <string.h>
 
 ////////////////////////////////////////////////////////////////////////////////
-/// Short alias for hes_query_string() — readability only.
+/// Short alias for hes_query_string(), for readability only.
 static inline const char* qstr(hes_query_ctx_t* ctx, const char* path)
 {
     return hes_query_string(ctx, path);

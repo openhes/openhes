@@ -127,7 +127,7 @@ static void on_properties_changed(GDBusProxy* proxy,
 /// @return TRUE when services were resolved, FALSE on timeout.
 static gboolean wait_for_services_resolved(GDBusProxy* dproxy, int timeout_sec)
 {
-    // Fast path – already resolved
+    // Fast path: already resolved
     GVariant* val = g_dbus_proxy_get_cached_property(dproxy, "ServicesResolved");
     if (val) {
         gboolean resolved = g_variant_get_boolean(val);
@@ -137,7 +137,7 @@ static gboolean wait_for_services_resolved(GDBusProxy* dproxy, int timeout_sec)
         }
     }
 
-    // Poll – iterate the main context so D-Bus messages get processed
+    // Poll: iterate the main context so D-Bus messages get processed
     for (int i = 0; i < timeout_sec * 4; i++) {
         // Process any pending D-Bus events so the property cache updates
         g_main_context_iteration(NULL, FALSE);

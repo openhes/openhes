@@ -44,7 +44,7 @@
 #define MAC "54:6C:0E:B7:20:04"
 #define DEVICE_PATH "/org/bluez/hci0/dev_54_6C_0E_B7_20_04"
 
-/// Standard Bluetooth Battery Service – Battery Level characteristic
+/// Standard Bluetooth Battery Service: Battery Level characteristic
 #define BATTERY_CHAR_UUID "00002a19-0000-1000-8000-00805f9b34fb"
 
 static GDBusProxy* dev_proxy = NULL;

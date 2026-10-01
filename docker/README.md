@@ -1,20 +1,20 @@
 In the current Dockerfile, do I really have to use this way to install packages for arm64? Can't I just use apt install to install these packages?
 
-The short answer is: **not reliably** — and the current approach is actually a well-known pattern for cross-compilation Dockerfiles. Here's why:
+The short answer is: **not reliably**. The current approach is a well-known pattern for cross-compilation Dockerfiles. Here is why:
 
 ## Why `apt-get install libc6-dev:arm64` is problematic
 
 Even though you've added `dpkg --add-architecture arm64` and configured the repos, running `apt-get install` for `:arm64` packages on an **amd64 host** will:
 
 1. Install the arm64 `.deb` files
-2. **Run post-installation scripts** (`postinst`) — these scripts are **arm64 ELF binaries** that can't execute on an amd64 kernel without QEMU `binfmt_misc`
+2. **Run post-installation scripts** (`postinst`) - these scripts are **arm64 ELF binaries** that cannot run on an amd64 kernel without QEMU `binfmt_misc`
 3. This causes `dpkg` to fail mid-install, leaving the package database in a broken state
 
-For example, `libc6:arm64`'s `postinst` calls `ldconfig` with arm64 libraries, and `libglib2.0-dev:arm64` may try to run `glib-compile-schemas` — both will fail.
+For example, `libc6:arm64`'s `postinst` calls `ldconfig` with arm64 libraries, and `libglib2.0-dev:arm64` may try to run `glib-compile-schemas`. Both will fail.
 
 ## The current approach is the proven solution
 
-`apt-get download` + `dpkg-deb -x` avoids running any postinst scripts entirely — it's just a **tarball extraction**. You get all the headers and `.so` files you need, which is exactly what cross-compilation requires. This is the same strategy used by:
+`apt-get download` + `dpkg-deb -x` avoids running any postinst scripts at all. It is just a **tarball extraction**. You get all the headers and `.so` files you need, which is exactly what cross-compilation requires. This is the same strategy used by:
 
 - **Yocto/OpenEmbedded** (populate_sysroot)
 - **crosstool-NG**
@@ -40,7 +40,7 @@ RUN mkdir -p /tmp/sysroot && cd /tmp/sysroot && \
     for f in *.deb; do dpkg-deb -x "$f" /tmp/sysroot-root/ 2>/dev/null || true; done
 ```
 
-Or even more concisely — use a single `for` loop with an inline extraction:
+Or shorter: use a single `for` loop with an inline extraction:
 
 ```dockerfile
 RUN mkdir -p /tmp/sysroot && cd /tmp/sysroot && \
@@ -54,13 +54,13 @@ RUN mkdir -p /tmp/sysroot && cd /tmp/sysroot && \
     for f in *.deb; do dpkg-deb -x "$f" /tmp/sysroot-root/ 2>/dev/null || true; done
 ```
 
-**Summary:** Your current approach is correct and battle-tested for cross-compilation. You *could* shoehorn `apt-get install` with `DPkg::Options::=--force-all` and `QEMU_LD_PREFIX` tricks, but it's far more brittle — don't change it.
+**Summary:** the current approach is correct and battle-tested for cross-compilation. You *could* make `apt-get install` work with `DPkg::Options::=--force-all` and `QEMU_LD_PREFIX` tricks, but it is far more brittle. Do not change it.
 
 ---
 
 In #file:Dockerfile.crossbuild:78-92 , I see that you copy files from sysroot to /usr/aarch64-linux-gnu/**. Is this the best practice? Is putting files under /usr/<arch> the common practice?
 
-Great question — yes, **`/usr/aarch64-linux-gnu` is the standard convention** for cross-compilation sysroots on Linux. Here's why:
+Yes, **`/usr/aarch64-linux-gnu` is the standard convention** for cross-compilation sysroots on Linux. Here is why:
 
 ## This is exactly what the toolchain expects
 
@@ -68,7 +68,7 @@ When you install `gcc-aarch64-linux-gnu` (via apt), the compiler is **pre-config
 
 ```bash
 aarch64-linux-gnu-gcc -print-search-dirs
-aarch64-linux-gnu-gcc -print-multiarch      # → aarch64-linux-gnu
+aarch64-linux-gnu-gcc -print-multiarch      # -> aarch64-linux-gnu
 ```
 
 The multiarch triplet `aarch64-linux-gnu` is baked into the compiler's search path. So placing libraries in `/usr/aarch64-linux-gnu/lib/` and headers in `/usr/aarch64-linux-gnu/include/` means the cross-compiler will **find them automatically** without any extra `-I` or `-L` flags.
@@ -77,11 +77,11 @@ The multiarch triplet `aarch64-linux-gnu` is baked into the compiler's search pa
 
 On a real arm64 system (or an arm64 chroot), packages install to:
 
-- `/usr/lib/aarch64-linux-gnu/` — architecture-specific shared libraries
-- include — headers (same path, but the compiler knows its triple)
-- `/usr/lib/aarch64-linux-gnu/pkgconfig/` — `.pc` files
+- `/usr/lib/aarch64-linux-gnu/` - architecture-specific shared libraries
+- `/usr/include` - headers (same path, but the compiler knows its triple)
+- `/usr/lib/aarch64-linux-gnu/pkgconfig/` - `.pc` files
 
-So the Dockerfile is essentially **recreating the sysroot layout** that a native arm64 system would have, just under `/usr/aarch64-linux-gnu/` — which is exactly where the cross-compiler looks.
+So the Dockerfile is essentially **recreating the sysroot layout** that a native arm64 system would have, just under `/usr/aarch64-linux-gnu/`, which is exactly where the cross-compiler looks.
 
 ## Other common patterns
 
@@ -89,11 +89,11 @@ There are a few variations in practice, all valid:
 
 | Approach                                   | Description                                                                            |
 |--------------------------------------------|----------------------------------------------------------------------------------------|
-| **`/usr/aarch64-linux-gnu`** (yours)       | Simplified — headers + libs together under the triplet dir. Clean and works great.     |
-| Full sysroot (e.g. `/sysroot`)             | A complete arm64 filesystem root (usr, lib, etc…). Used by Yocto/OpenEmbedded. Passed via `--sysroot` to gcc. |
+| **`/usr/aarch64-linux-gnu`** (yours)       | Simplified - headers + libs together under the triplet dir. Clean and works great.     |
+| Full sysroot (e.g. `/sysroot`)             | A complete arm64 filesystem root (usr, lib, etc...). Used by Yocto/OpenEmbedded. Passed via `--sysroot` to gcc. |
 | **`/usr/lib/aarch64-linux-gnu`** + include | Closest to actual Debian multiarch layout. Requires `-I/usr/include` to work. |
 
-Your approach is actually **cleaner than a full sysroot** for this use case — you don't need a whole arm64 rootfs, just the development headers and libraries. And by putting them under `/usr/aarch64-linux-gnu/`, you avoid cluttering include with arm64 headers which could conflict with native amd64 development packages.
+Your approach is actually **cleaner than a full sysroot** for this use case: you do not need a whole arm64 rootfs, only the development headers and libraries. And by putting them under `/usr/aarch64-linux-gnu/`, you avoid cluttering include with arm64 headers which could conflict with native amd64 development packages.
 
 ## tl;dr
 
@@ -122,9 +122,9 @@ These are **arm64 ELF binaries** if you install `libglib2.0-dev:arm64`, which me
 
 `pkg-config` itself is already installed (step 1), but it also needs `glib-2.0.pc` and related `.pc` files available for its own internal operations (some CMake or autotools setups query them from the host side during configuration).
 
-## But wait — won't the amd64 `.pc` files conflict with the arm64 ones?
+## But wait: will the amd64 `.pc` files conflict with the arm64 ones?
 
-No — they live in different paths:
+No. They live in different paths:
 
 - **amd64**: pkgconfig
 - **arm64**: `/usr/aarch64-linux-gnu/lib/pkgconfig/`
@@ -133,7 +133,7 @@ And the toolchain file overrides `PKG_CONFIG_LIBDIR` to point exclusively to the
 
 ## Summary
 
-You could potentially skip this step if none of your code uses GObject signals, GResources, or GSchema files — but GLib-based projects often do. The native tools are essential for **cross-compilation** because you can't run arm64 executables on amd64.
+You can skip this step if none of your code uses GObject signals, GResources, or GSchema files, but GLib-based projects often do. The native tools are needed for **cross-compilation**, because you cannot run arm64 executables on amd64.
 
 ---
 

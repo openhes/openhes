@@ -186,7 +186,7 @@ static int core_authorize(void* ctx, const hes_clme_msg_t* msg, const char* at_a
 /// Several devices can sit behind one interface module, so rows are counted per
 /// (moduleType, moduleRefIndex), not per row.
 ///
-/// For example, tests/bm_appservice_multi_input.xml has four addressing rows:
+/// For example, tests/data/bm_appservice_multi_input.xml has four addressing rows:
 ///
 ///   di=6  mt=hi  mi=1   the SensorTag button
 ///   di=7  mt=hi  mi=1   its motion sensor   -- one BLE module, so these
@@ -563,15 +563,15 @@ int core_main(const core_config_t* cfg)
     // (op_ready()), which is why the controller + processor form one coherent
     // dataflow:
     //
-    // - external values → subscribed events → value_cache → operations fire →
-    //   results cached at out_device_index → which can unlock downstream
-    //   'it'-chained operations (via the recursive bm_evaluate_all), and → PUT
-    //   to the destination object on the bus.
+    // - external values -> subscribed events -> value_cache -> operations fire
+    //   -> results cached at out_device_index -> which can unlock downstream
+    //   'it'-chained operations (via the recursive bm_evaluate_all) -> PUT to
+    //   the destination object on the bus.
     //
-    // So in one line: the controller sets up the data sources the gateway
-    // depends on; the processor consumes them to do the source→destination
-    // binding and conversion — matching the standard's "controller for
-    // setup/configuration, processor for real-time operation" split.
+    // In one sentence: the controller sets up the data sources the gateway
+    // depends on, and the processor consumes them to bind each source to its
+    // destination and convert the value. That matches the standard's split of
+    // "controller for setup/configuration, processor for real-time operation".
     bm_controller_start(&bm, &bus);
 
     // --- customer-specific protected app (Lua) ---

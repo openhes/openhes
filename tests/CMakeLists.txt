@@ -8,6 +8,20 @@ set(TEST_BUS_SRCS
   ../src/common/hes_clock.c
 )
 
+# munit is the test framework: every test is a munit test in a suite, so a
+# failure names the test it came from and the process exit code is the verdict.
+# It is third-party code (deps/munit, MIT), so it is compiled once, kept quiet
+# the same way the root CMakeLists quiets nng, and vendored -- a unit test
+# should not need a package manager to run.
+add_library(munit STATIC ../deps/munit/munit.c)
+target_include_directories(munit PUBLIC ../deps/munit)
+# munit targets C11, and C23 removed ATOMIC_VAR_INIT from <stdatomic.h>, so it is
+# compiled as the C11 it expects rather than patching vendored code.
+set_target_properties(munit PROPERTIES C_STANDARD 11 C_STANDARD_REQUIRED ON)
+if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+  target_compile_options(munit PRIVATE -w)
+endif()
+
 # The XML layer (src/common/hes_query.c) is the single place in the tree that
 # touches libxml2, so it is tested directly, with no bus and no stub: path
 # translation, element handles, collections, tree navigation, and the
@@ -23,7 +37,7 @@ target_include_directories(test_hes_query PRIVATE
   ../deps/libxml2/include
 )
 
-target_link_libraries(test_hes_query PRIVATE LibXml2 m)
+target_link_libraries(test_hes_query PRIVATE munit LibXml2 m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test_hes_query PRIVATE -Wall -Wextra)
@@ -53,7 +67,7 @@ target_include_directories(test_bm PRIVATE
   ../deps/log
 )
 
-target_link_libraries(test_bm PRIVATE nng LibXml2 m)
+target_link_libraries(test_bm PRIVATE munit nng LibXml2 m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test_bm PRIVATE -Wall -Wextra)
@@ -84,7 +98,7 @@ target_include_directories(test_bm_appservice PRIVATE
   ../deps/log
 )
 
-target_link_libraries(test_bm_appservice PRIVATE nng LibXml2 m)
+target_link_libraries(test_bm_appservice PRIVATE munit nng LibXml2 m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test_bm_appservice PRIVATE -Wall -Wextra)
@@ -114,7 +128,7 @@ target_include_directories(test_auth_propagate PRIVATE
   ../deps/log
 )
 
-target_link_libraries(test_auth_propagate PRIVATE nng LibXml2 jansson::jansson m)
+target_link_libraries(test_auth_propagate PRIVATE munit nng LibXml2 jansson::jansson m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test_auth_propagate PRIVATE -Wall -Wextra)
@@ -149,7 +163,7 @@ target_include_directories(test_auth_authorize PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../deps/jansson/include
 )
 
-target_link_libraries(test_auth_authorize PRIVATE nng LibXml2 jansson::jansson
+target_link_libraries(test_auth_authorize PRIVATE munit nng LibXml2 jansson::jansson
   TF-PSA-Crypto::tfpsacrypto m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -178,7 +192,7 @@ target_include_directories(test_id_service PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../deps/jansson/include
 )
 
-target_link_libraries(test_id_service PRIVATE nng jansson::jansson
+target_link_libraries(test_id_service PRIVATE munit nng jansson::jansson
   TF-PSA-Crypto::tfpsacrypto m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
@@ -205,7 +219,7 @@ target_include_directories(test_dispatch PRIVATE
   ../deps/log
 )
 
-target_link_libraries(test_dispatch PRIVATE nng m)
+target_link_libraries(test_dispatch PRIVATE munit nng m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test_dispatch PRIVATE -Wall -Wextra)
@@ -237,7 +251,7 @@ target_include_directories(test_time_service PRIVATE
   ../deps/log
 )
 
-target_link_libraries(test_time_service PRIVATE nng LibXml2 m)
+target_link_libraries(test_time_service PRIVATE munit nng LibXml2 m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
   target_compile_options(test_time_service PRIVATE -Wall -Wextra)
@@ -267,7 +281,7 @@ target_include_directories(test_time_net PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../deps/jansson/include
 )
 
-target_link_libraries(test_time_net PRIVATE jansson::jansson
+target_link_libraries(test_time_net PRIVATE munit jansson::jansson
   CURL::libcurl
   Threads::Threads m)
 
@@ -299,7 +313,7 @@ target_include_directories(test_crypto_identity PRIVATE
   ${CMAKE_CURRENT_BINARY_DIR}/../deps/jansson/include
 )
 
-target_link_libraries(test_crypto_identity PRIVATE nng jansson::jansson
+target_link_libraries(test_crypto_identity PRIVATE munit nng jansson::jansson
   TF-PSA-Crypto::tfpsacrypto m)
 
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")

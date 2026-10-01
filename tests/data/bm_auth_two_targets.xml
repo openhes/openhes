@@ -87,7 +87,7 @@
                     <data versionNumber="1.0.0" addrPoint="pd" transCode="ad" descriptiveName="address"></data>
                 </addressingTable>
                 <!-- Not in the product profile: the demo's second button
-                     ('button 2', di=7), as in tests/bm_auth_two_buttons.xml. -->
+                     ('button 2', di=7), as in tests/data/bm_auth_two_buttons.xml. -->
                 <addressingTable versionNumber="1.0.0" addrPoint="na" transCode="at2" descriptiveName="addressingTable">
                     <data versionNumber="1.0.0" addrPoint="pd" transCode="di" descriptiveName="deviceIndex">7</data>
                     <data versionNumber="1.0.0" addrPoint="pd" transCode="mt" descriptiveName="moduleType">hi</data>

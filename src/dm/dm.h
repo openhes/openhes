@@ -20,7 +20,7 @@
 ///
 /// @details
 /// The service is implemented in dm.c; this header exposes only the launcher that
-/// src/cli/cmd_dm.c calls. See docs/poc_design.md §9.3-9.4, §12 for the model: a
+/// src/cli/cmd_dm.c calls. See docs/poc_design.md sections 9.3-9.4 and 12 for the model: a
 /// static Product Profile Manifest (the virtual half) plus an in-memory registry
 /// of the real devices modules report, served over NNG.
 ///

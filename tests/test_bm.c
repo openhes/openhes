@@ -1,4 +1,19 @@
 ////////////////////////////////////////////////////////////////////////////////
+// Copyright 2026 Tom G. Huang <tomghuang@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not
+// use this file except in compliance with the License. You may obtain a copy of
+// the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations under
+// the License.
+
+////////////////////////////////////////////////////////////////////////////////
 /// @file
 /// @brief Offline unit test for the binding-map engine (src/bm/bm.c), exercising
 /// it against the real (vendored) nng + libxml2 -- no stub.
@@ -11,10 +26,14 @@
 ///     we open a pub socket (handed to the binding map as its "bus"), listen on
 ///     inproc://, and dial a capture SUB subscribed to "" -- every message the
 ///     map sends is received and asserted on.
-///   - The XML fixtures live in <root>/tests (bm_*_controlled_light.xml), NOT
-///     the poc2 sample documents, so assertions target THIS scenario.
+///   - The XML fixtures live in <root>/tests/data (bm_*.xml), NOT the poc2
+///     sample documents, so assertions target THIS scenario.
 ///
-/// Scenario under test: tests/bm_button_controlled_light.xml
+/// The cases are munit tests (deps/munit): each one has a name in the output,
+/// and munit owns the command line, so the fixture path is no longer an
+/// argument (`test_bm --list` names the cases).
+///
+/// Scenario under test: tests/data/bm_button_controlled_light.xml
 ///   - one rule: SensorTag button (di=6) down  -> light (di=2) ON
 ///               SensorTag button (di=6) up    -> light (di=2) OFF
 ///   - controller: one SUBSCRIBE for the button object (the only external input)
@@ -26,7 +45,10 @@
 ///        -I../deps/libxml2/include test_bm.c ../src/bm/bm.c
 ///        ../src/common/hes_bus.c -lnng -lxml2 -lm -o test_bm
 ///     ./test_bm [path-to-bm_button_controlled_light.xml]
+
 #include "../src/bm/bm.h"
+
+#include <munit.h>
 
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/pub.h>
@@ -41,6 +63,8 @@
 
 #define MAX_CAPTURED 16
 
+#define FIXTURE "data/bm_button_controlled_light.xml"
+
 static hes_bus_t g_bus;   // the bus we hand to the binding map
 static nng_socket g_cap;  // our capture subscriber
 
@@ -51,26 +75,12 @@ static void cap_start(void)
 {
     memset(&g_bus, 0, sizeof(g_bus));
 
-    if (nng_pub0_open(&g_bus.pub_sock) != 0) {
-        fprintf(stderr, "test: nng_pub0_open failed\n");
-        exit(1);
-    }
-    if (nng_listen(g_bus.pub_sock, "inproc://test_bm_cap", NULL, 0) != 0) {
-        fprintf(stderr, "test: inproc listen failed\n");
-        exit(1);
-    }
-
-    if (nng_sub0_open(&g_cap) != 0) {
-        fprintf(stderr, "test: nng_sub0_open failed\n");
-        exit(1);
-    }
-    if (nng_socket_set(g_cap, NNG_OPT_SUB_SUBSCRIBE, "", 0) != 0) {
-        fprintf(stderr, "test: subscribe-all failed\n");
-        exit(1);
-    }
-    if (nng_dial(g_cap, "inproc://test_bm_cap", NULL, 0) != 0) {
-        fprintf(stderr, "test: inproc dial failed\n");
-        exit(1);
+    if (nng_pub0_open(&g_bus.pub_sock) != 0 ||
+        nng_listen(g_bus.pub_sock, "inproc://test_bm_cap", NULL, 0) != 0 ||
+        nng_sub0_open(&g_cap) != 0 ||
+        nng_socket_set(g_cap, NNG_OPT_SUB_SUBSCRIBE, "", 0) != 0 ||
+        nng_dial(g_cap, "inproc://test_bm_cap", NULL, 0) != 0) {
+        munit_error("cannot set up the capture bus");
     }
     nng_socket_set_ms(g_cap, NNG_OPT_RECVTIMEO, 300);
     nng_msleep(50);  // let the inproc subscription settle
@@ -142,39 +152,69 @@ static int is_put(const hes_clme_msg_t* m, const char* path, uint32_t di, const 
            strcmp(m->payload, payload) == 0;
 }
 
-#define CHECK(cond)                                                         \
-    do {                                                                    \
-        if (!(cond)) {                                                      \
-            fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-            return 1;                                                       \
-        }                                                                   \
-    } while (0)
-
-int main(int argc, char** argv)
+/// The XML -> in-memory map: one row, two addressing rows, and the row's own
+/// fields.
+static MunitResult test_parse(const MunitParameter params[], void* user_data)
 {
-    const char* xml = (argc > 1) ? argv[1] : "bm_button_controlled_light.xml";
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, xml) == 0);
-    printf("test: loaded %s -> ops=%d addrs=%d\n", xml, bm.n_ops, bm.n_addrs);
+    munit_assert_int(bm_load_xml(&bm, FIXTURE), ==, 0);
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // parse assertions
-    ////////////////////////////////////////////////////////////////////////////////
-    CHECK(bm.n_ops == 1);
-    CHECK(bm.n_addrs == 2);
+    munit_assert_int(bm.n_ops, ==, 1);
+    munit_assert_int(bm.n_addrs, ==, 2);
+
     const bm_operation_t* op = &bm.ops[0];
-    CHECK(strcmp(op->operation, "gt") == 0);
-    CHECK(op->enabled);
-    CHECK(op->n_inputs == 1);
-    CHECK(op->inputs[0].device_index == 6);
-    CHECK(strcmp(op->inputs[0].source_object, BTN_PATH) == 0);
-    CHECK(op->out_device_index == 2);
-    CHECK(strcmp(op->out_dest_object, LIGHT_PATH) == 0);
-    // addressing rows resolve both devices
-    CHECK(bm_find_addr(&bm, 6) != NULL);
-    CHECK(bm_find_addr(&bm, 2) != NULL);
+    munit_assert_string_equal(op->operation, "gt");
+    munit_assert_true(op->enabled);
+    munit_assert_int(op->n_inputs, ==, 1);
+    munit_assert_uint(op->inputs[0].device_index, ==, 6);
+    munit_assert_string_equal(op->inputs[0].source_object, BTN_PATH);
+    munit_assert_uint(op->out_device_index, ==, 2);
+    munit_assert_string_equal(op->out_dest_object, LIGHT_PATH);
+    munit_assert_not_null(bm_find_addr(&bm, 6));
+    munit_assert_not_null(bm_find_addr(&bm, 2));
+    return MUNIT_OK;
+}
+
+/// Loads the map, starts the capture bus, and consumes the controller's one
+/// SUBSCRIBE -- the state every scenario test starts from.
+static void scenario_start(binding_map_t* bm)
+{
+    bm_init(bm);
+    if (bm_load_xml(bm, FIXTURE) != 0) {
+        munit_errorf("cannot load %s", FIXTURE);
+    }
+
+    cap_start();
+    bm_controller_start(bm, &g_bus);
+
+    hes_clme_msg_t msg;
+    if (expect_sends(1, &msg) != 1) {
+        munit_error("the controller did not send exactly one SUBSCRIBE");
+    }
+}
+
+static void capture_tear_down(void* fixture)
+{
+    (void)fixture;
+
+    nng_close(g_cap);
+    nng_close(g_bus.pub_sock);
+}
+
+/// The controller subscribes to exactly one object: the button, the map's only
+/// external input.
+static MunitResult test_controller_subscribe(const MunitParameter params[], void* user_data)
+{
+    (void)params;
+    (void)user_data;
+
+    binding_map_t bm;
+    bm_init(&bm);
+    munit_assert_int(bm_load_xml(&bm, FIXTURE), ==, 0);
 
     cap_start();
 
@@ -183,69 +223,93 @@ int main(int argc, char** argv)
     ////////////////////////////////////////////////////////////////////////////////
     hes_clme_msg_t msgs[MAX_CAPTURED];
     bm_controller_start(&bm, &g_bus);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(msgs[0].verb == HES_VERB_SUBSCRIBE);
-    CHECK(msgs[0].device_index == 6);
-    CHECK(strcmp(msgs[0].path, BTN_PATH) == 0);
-    printf("test: controller subscribed to %s (di=6)\n", msgs[0].path);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_uint(msgs[0].verb, ==, HES_VERB_SUBSCRIBE);
+    munit_assert_uint(msgs[0].device_index, ==, 6);
+    munit_assert_string_equal(msgs[0].path, BTN_PATH);
+    return MUNIT_OK;
+}
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // a question is not a reading: a GET request must not become a value
-    ////////////////////////////////////////////////////////////////////////////////
+/// A question is not a reading: a GET request, and an EVENT that carries no
+/// payload, must not become the input's value.
+static MunitResult test_get_is_not_a_reading(const MunitParameter params[], void* user_data)
+{
+    (void)params;
+    (void)user_data;
+
+    binding_map_t bm;
+    scenario_start(&bm);
+
+    hes_clme_msg_t msgs[MAX_CAPTURED];
+
     // The request carries only a path, so reading a value out of it would store
     // bm_datum_value("") == 0.0 as the button's value -- a reading never taken --
     // and fire the row. Nothing may be sent, and the input must stay unknown.
-    {
-        hes_clme_msg_t req = {0};
-        req.verb = HES_VERB_GET;
-        hes_msg_set_path(&req, BTN_PATH);
-        bm_processor_handle(&bm, &g_bus, &req);
-        CHECK(expect_sends(0, msgs) == 0);
-    }
+    hes_clme_msg_t req = {0};
+    req.verb = HES_VERB_GET;
+    hes_msg_set_path(&req, BTN_PATH);
+    bm_processor_handle(&bm, &g_bus, &req);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
 
     // The same goes for an EVENT that carries no reading.
-    {
-        hes_clme_msg_t ev = {0};
-        ev.verb = HES_VERB_EVENT;
-        hes_msg_set_path(&ev, BTN_PATH);
-        bm_processor_handle(&bm, &g_bus, &ev);
-        CHECK(expect_sends(0, msgs) == 0);
-    }
-    printf("test: GET request / payload-less EVENT -> no value cached, no PUT\n");
+    hes_clme_msg_t ev = {0};
+    ev.verb = HES_VERB_EVENT;
+    hes_msg_set_path(&ev, BTN_PATH);
+    bm_processor_handle(&bm, &g_bus, &ev);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+    return MUNIT_OK;
+}
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // processor: button down -> light ON
-    ////////////////////////////////////////////////////////////////////////////////
+/// The scenario, in order: press -> on, release -> off, the same value again ->
+/// nothing, and press -> on again. One case, because each step depends on the
+/// value the previous one left behind -- the change detection is the point.
+static MunitResult test_button_toggle(const MunitParameter params[], void* user_data)
+{
+    (void)params;
+    (void)user_data;
+
+    binding_map_t bm;
+    scenario_start(&bm);
+
+    hes_clme_msg_t msgs[MAX_CAPTURED];
+
+    // button down -> light ON
     feed_dev(&bm, BTN_PATH, 6, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "1"));
-    printf("test: button down -> PUT %s = %s\n", msgs[0].path, msgs[0].payload);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "1"));
 
-    ////////////////////////////////////////////////////////////////////////////////
-    // processor: button up -> light OFF
-    ////////////////////////////////////////////////////////////////////////////////
-    feed(&bm, BTN_PATH, 0.0);  // legacy no-di attribution path
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "0"));
-    printf("test: button up   -> PUT %s = %s\n", msgs[0].path, msgs[0].payload);
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // change detection: same value again -> no re-send
-    ////////////////////////////////////////////////////////////////////////////////
+    // button up -> light OFF (legacy, no-di attribution path)
     feed(&bm, BTN_PATH, 0.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    printf("test: unchanged value -> no re-send (change detection works)\n");
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "0"));
 
-    ////////////////////////////////////////////////////////////////////////////////
+    // the same value again -> no re-send
+    feed(&bm, BTN_PATH, 0.0);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+
     // and it flips again
-    ////////////////////////////////////////////////////////////////////////////////
     feed_dev(&bm, BTN_PATH, 6, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], LIGHT_PATH, 2, "1"));
-    printf("test: button down again -> PUT %s = %s\n", msgs[0].path, msgs[0].payload);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], LIGHT_PATH, 2, "1"));
+    return MUNIT_OK;
+}
 
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
-    printf("ALL TESTS PASSED\n");
-    return 0;
+static MunitTest bm_tests[] = {
+  { (char*)"/parse", test_parse, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*)"/controller-subscribe", test_controller_subscribe, NULL, capture_tear_down,
+    MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*)"/get-is-not-a-reading", test_get_is_not_a_reading, NULL, capture_tear_down,
+    MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*)"/button-toggle", test_button_toggle, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
+static const MunitSuite bm_suite = {
+  (char*)"/bm", bm_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE
+};
+
+int main(int argc, char* argv[])
+{
+  return munit_suite_main(&bm_suite, NULL, argc, argv);
 }

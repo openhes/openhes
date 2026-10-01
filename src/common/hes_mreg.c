@@ -20,7 +20,7 @@
 ///
 /// @details
 /// Wire protocol (JSON strings over NNG; this is the "system" channel the
-/// standard leaves to the manufacturer -- docs/poc_design.md §9):
+/// standard leaves to the manufacturer -- docs/poc_design.md section 9):
 ///
 ///   client -> service (REQ/REP):
 ///     query:  {"cmd":"query","moduleType":"hi","moduleRefIndex":N}

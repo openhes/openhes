@@ -58,4 +58,4 @@ test: amd64-build
 
 clean:
 	@echo "Cleaning project..."
-	@rm -rf build build-arm64 build-amd64 build-release
+	@rm -rf build build-arm64 build-amd64 build-release .temp

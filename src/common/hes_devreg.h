@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// @file
 /// @brief Device registry: an interface module's slice of the runtime Device
-/// Manifest (see docs/poc_design.md §9.3-9.4).
+/// Manifest (see docs/poc_design.md section 9.3-9.4).
 ///
 /// @details
 /// A HAN/WAN interface module is the ONLY component that needs real
@@ -30,7 +30,7 @@
 /// user-object path (two identical bulbs both expose /lx/ob/uo/li/ll/da/cv),
 /// a received message is attributed to a device by deviceIndex -- the
 /// CLIP-style 'di' query adopted as CLDPE manufacturer-defined addressing
-/// (see docs/poc_design.md §9.5). Messages whose deviceIndex is not in
+/// (see docs/poc_design.md section 9.5). Messages whose deviceIndex is not in
 /// this slice are ignored, which is what lets the same device type be
 /// hosted by one module OR spread across several modules.
 ///

@@ -16,7 +16,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 /// @file
 /// @brief The Device Manifest service: a "system" component (NOT part of ISO/IEC
-/// 15045/18012 -- see docs/poc_design.md §9.3-9.4, §12).
+/// 15045/18012 -- see docs/poc_design.md section 9.3-9.4 and section 12).
 ///
 /// @details
 /// The ONLY file is the static Product Profile Manifest (virtual identities:

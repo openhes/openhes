@@ -234,7 +234,7 @@ static gboolean on_read_humidity(gpointer user_data)
     if (len >= 4) {
         double temp, humidity;
         convert_humidity(bytes, len, &temp, &humidity);
-        printf("Temp: %.2f °C | Humidity: %.1f %% RH    \r", temp, humidity);
+        printf("Temp: %.2f C | Humidity: %.1f %% RH    \r", temp, humidity);
     } else {
         printf("Sensor warming up...                        \r");
     }

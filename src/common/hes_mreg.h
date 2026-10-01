@@ -45,7 +45,7 @@
 /// ('hi') the same index. A module SUBscribes only to its own topic, so at the
 /// transport level it can only ever receive information about the devices
 /// it manages (the same "per-module slice" principle that used to be a
-/// file, docs/poc_design.md §9.4).
+/// file, docs/poc_design.md section 9.4).
 ///
 /// Memory/ownership: the two sockets belong to the hes_mreg_t the caller supplies;
 /// a slice is copied into the caller's hes_devreg_t.

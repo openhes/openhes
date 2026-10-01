@@ -1,4 +1,19 @@
 ////////////////////////////////////////////////////////////////////////////////
+// Copyright 2026 Tom G. Huang <tomghuang@gmail.com>
+//
+// Licensed under the Apache License, Version 2.0 (the "License"); you may not
+// use this file except in compliance with the License. You may obtain a copy of
+// the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+// License for the specific language governing permissions and limitations under
+// the License.
+
+////////////////////////////////////////////////////////////////////////////////
 /// @file
 /// @brief Offline test for the authorization service's propagation into the
 /// binding map (ISO/IEC 18012-3 11.2.4).
@@ -12,18 +27,21 @@
 ///   map then enforces 'at' locally: 'bk' suppresses the outgoing PUT.
 ///
 /// Fixtures:
-///   tests/bm_auth_two_targets.xml  -- two rows, both authorType 'bk' by default
+///   tests/data/bm_auth_two_targets.xml  -- two rows, both authorType 'bk' by default
 ///                                     (deny by default); addresses
 ///                                     /lx/ob/bm/ot1/op1/at and .../ot2/op1/at
-///   tests/auth_policy_kid.json     -- kid active (st=au): opens target A,
+///   tests/data/auth_policy_kid.json     -- kid active (st=au): opens target A,
 ///                                     leaves target B blocked (Annex D's
 ///                                     "kid partial control")
-///   tests/auth_policy_parent.json  -- parent active (st=au): opens both
+///   tests/data/auth_policy_parent.json  -- parent active (st=au): opens both
 ///
 /// Real nng + libxml2 + jansson; no Lua, no bus round-trip needed.
 /// Build/run: see tests/CMakeLists.txt (ctest).
+
 #include "../src/bm/bm.h"
 #include "../src/services/auth/auth.h"
+
+#include <munit.h>
 
 #include <nng/nng.h>
 #include <nng/protocol/pubsub0/pub.h>
@@ -50,28 +68,23 @@ static void cap_start(void)
 {
     memset(&g_bus, 0, sizeof(g_bus));
 
-    if (nng_pub0_open(&g_bus.pub_sock) != 0) {
-        fprintf(stderr, "test: nng_pub0_open failed\n");
-        exit(1);
-    }
-    if (nng_listen(g_bus.pub_sock, "inproc://test_auth", NULL, 0) != 0) {
-        fprintf(stderr, "test: inproc listen failed\n");
-        exit(1);
-    }
-    if (nng_sub0_open(&g_cap) != 0) {
-        fprintf(stderr, "test: nng_sub0_open failed\n");
-        exit(1);
-    }
-    if (nng_socket_set(g_cap, NNG_OPT_SUB_SUBSCRIBE, "", 0) != 0) {
-        fprintf(stderr, "test: subscribe-all failed\n");
-        exit(1);
-    }
-    if (nng_dial(g_cap, "inproc://test_auth", NULL, 0) != 0) {
-        fprintf(stderr, "test: inproc dial failed\n");
-        exit(1);
+    if (nng_pub0_open(&g_bus.pub_sock) != 0 ||
+        nng_listen(g_bus.pub_sock, "inproc://test_auth", NULL, 0) != 0 ||
+        nng_sub0_open(&g_cap) != 0 ||
+        nng_socket_set(g_cap, NNG_OPT_SUB_SUBSCRIBE, "", 0) != 0 ||
+        nng_dial(g_cap, "inproc://test_auth", NULL, 0) != 0) {
+        munit_error("cannot set up the capture bus");
     }
     nng_socket_set_ms(g_cap, NNG_OPT_RECVTIMEO, 300);
     nng_msleep(50);
+}
+
+static void capture_tear_down(void* fixture)
+{
+    (void)fixture;
+
+    nng_close(g_cap);
+    nng_close(g_bus.pub_sock);
 }
 
 static int expect_sends(int n, hes_clme_msg_t* out)
@@ -121,219 +134,195 @@ static int is_put(const hes_clme_msg_t* m, const char* path, uint32_t di, const 
            strcmp(m->payload, payload) == 0;
 }
 
-#define CHECK(cond)                                                         \
-    do {                                                                    \
-        if (!(cond)) {                                                      \
-            fprintf(stderr, "FAIL %s:%d: %s\n", __FILE__, __LINE__, #cond); \
-            return 1;                                                       \
-        }                                                                   \
-    } while (0)
-
 ////////////////////////////////////////////////////////////////////////////////
 /// Both rows start blocked: deny by default, before any authorization.
-static int test_starts_denied(binding_map_t* bm)
+static MunitResult test_starts_denied(const MunitParameter params[], void* user_data)
 {
-    printf("--- binding map starts denied by default ---\n");
+    (void)params;
+    (void)user_data;
 
-    CHECK(bm_load_xml(bm, "bm_auth_two_targets.xml") == 0);
-    CHECK(bm->n_ops == 2);
-    CHECK(strcmp(bm->ops[0].out_author_type, "bk") == 0);
-    CHECK(strcmp(bm->ops[1].out_author_type, "bk") == 0);
+    binding_map_t bm;
+    bm_init(&bm);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_auth_two_targets.xml"), ==, 0);
+    munit_assert_int(bm.n_ops, ==, 2);
+    munit_assert_string_equal(bm.ops[0].out_author_type, "bk");
+    munit_assert_string_equal(bm.ops[1].out_author_type, "bk");
 
     // The row addresses the authorization policy must name.
     char addr[HES_PATH_MAX];
-    bm_at_address(&bm->ops[0], addr, sizeof(addr));
-    CHECK(strcmp(addr, "/lx/ob/bm/ot1/op1/at") == 0);
-    bm_at_address(&bm->ops[1], addr, sizeof(addr));
-    CHECK(strcmp(addr, "/lx/ob/bm/ot2/op1/at") == 0);
+    bm_at_address(&bm.ops[0], addr, sizeof(addr));
+    munit_assert_string_equal(addr, "/lx/ob/bm/ot1/op1/at");
+    bm_at_address(&bm.ops[1], addr, sizeof(addr));
+    munit_assert_string_equal(addr, "/lx/ob/bm/ot2/op1/at");
 
     // Nothing flows while both are blocked.
     cap_start();
     hes_clme_msg_t msgs[MAX_CAPTURED];
-    feed(bm, BTN_PATH, 6, 1.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    feed(bm, BTN_PATH, 7, 1.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    printf("test: both targets blocked before authorization\n");
-
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
-    return 0;
+    feed(&bm, BTN_PATH, 6, 1.0);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+    feed(&bm, BTN_PATH, 7, 1.0);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
+    return MUNIT_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Kid active: target A opens, target B stays blocked.
-static int test_kid_partial(void)
+static MunitResult test_kid_partial(const MunitParameter params[], void* user_data)
 {
-    printf("--- kid active (st=au): partial control ---\n");
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, "bm_auth_two_targets.xml") == 0);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_auth_two_targets.xml"), ==, 0);
 
-    service_object_t* auth = auth_service_create("auth_policy_kid.json");
-    CHECK(auth != NULL);
+    service_object_t* auth = auth_service_create("data/auth_policy_kid.json");
+    munit_assert_not_null(auth);
 
     // A GET must expose class info but never a credential.
     hes_clme_msg_t reply = {0};
     auth->on_get(auth, &reply);
-    printf("test: auth GET -> %s\n", reply.payload);
-    CHECK(strstr(reply.payload, "kid") != NULL);
-    CHECK(strstr(reply.payload, "secret") == NULL);
-    CHECK(strstr(reply.payload, "parent-secret") == NULL);
+    munit_assert_not_null(strstr(reply.payload, "kid"));
+    munit_assert_null(strstr(reply.payload, "secret"));
+    munit_assert_null(strstr(reply.payload, "parent-secret"));
 
     int writes = auth_service_propagate(auth, write_at, &bm);
-    CHECK(writes == 2);  // kid's two permission rows (statusCheck 'au')
+    munit_assert_int(writes, ==, 2);  // kid's two permission rows (statusCheck 'au')
 
-    CHECK(strcmp(bm.ops[0].out_author_type, "fl") == 0);  // target A opened
-    CHECK(strcmp(bm.ops[1].out_author_type, "bk") == 0);  // target B blocked
+    munit_assert_string_equal(bm.ops[0].out_author_type, "fl");  // target A opened
+    munit_assert_string_equal(bm.ops[1].out_author_type, "bk");  // target B blocked
 
     cap_start();
     hes_clme_msg_t msgs[MAX_CAPTURED];
 
     // Target A flows.
     feed(&bm, BTN_PATH, 6, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], TARGET_A, 2, "1"));
-    printf("test: target A allowed -> PUT %s = %s\n", msgs[0].path, msgs[0].payload);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], TARGET_A, 2, "1"));
 
     // Target B is suppressed.
     feed(&bm, BTN_PATH, 7, 1.0);
-    CHECK(expect_sends(0, msgs) == 0);
-    printf("test: target B blocked -> no send\n");
-
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
 
     auth->destroy(auth);
     free(auth);
-    return 0;
+    return MUNIT_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// Same permission tables, only the class statuses swapped: both open.
-static int test_parent_full(void)
+static MunitResult test_parent_full(const MunitParameter params[], void* user_data)
 {
-    printf("--- parent active (st=au): both targets ---\n");
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, "bm_auth_two_targets.xml") == 0);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_auth_two_targets.xml"), ==, 0);
 
-    service_object_t* auth = auth_service_create("auth_policy_parent.json");
-    CHECK(auth != NULL);
+    service_object_t* auth = auth_service_create("data/auth_policy_parent.json");
+    munit_assert_not_null(auth);
 
     int writes = auth_service_propagate(auth, write_at, &bm);
-    CHECK(writes == 2);  // parent's two rows
+    munit_assert_int(writes, ==, 2);  // parent's two rows
 
-    CHECK(strcmp(bm.ops[0].out_author_type, "fl") == 0);
-    CHECK(strcmp(bm.ops[1].out_author_type, "fl") == 0);
+    munit_assert_string_equal(bm.ops[0].out_author_type, "fl");
+    munit_assert_string_equal(bm.ops[1].out_author_type, "fl");
 
     cap_start();
     hes_clme_msg_t msgs[MAX_CAPTURED];
 
     feed(&bm, BTN_PATH, 6, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], TARGET_A, 2, "1"));
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], TARGET_A, 2, "1"));
 
     feed(&bm, BTN_PATH, 7, 1.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], TARGET_B, 2, "1"));
-    printf("test: both targets allowed for the parent\n");
-
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], TARGET_B, 2, "1"));
 
     auth->destroy(auth);
     free(auth);
-    return 0;
+    return MUNIT_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A permission naming a binding-map address that does not exist is reported,
 /// not silently ignored.
-static int test_unknown_address(void)
+static MunitResult test_unknown_address(const MunitParameter params[], void* user_data)
 {
-    printf("--- permission naming an unknown binding-map row ---\n");
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, "bm_auth_two_targets.xml") == 0);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_auth_two_targets.xml"), ==, 0);
 
-    CHECK(bm_set_at(&bm, "/lx/ob/bm/ot9/op1/at", "fl") == -1);
-    CHECK(bm_set_at(&bm, "/lx/ob/bm/ot1/op1/at", "fl") == 0);
-    CHECK(strcmp(bm.ops[0].out_author_type, "fl") == 0);
-    printf("test: unknown at address rejected\n");
-
-    return 0;
+    munit_assert_int(bm_set_at(&bm, "/lx/ob/bm/ot9/op1/at", "fl"), ==, -1);
+    munit_assert_int(bm_set_at(&bm, "/lx/ob/bm/ot1/op1/at", "fl"), ==, 0);
+    munit_assert_string_equal(bm.ops[0].out_author_type, "fl");
+    return MUNIT_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 /// The development switch (core's --no-authz): a row the policy left blocked
 /// still flows once authorization is disabled -- and the 'at' field is *not*
 /// rewritten, so the switch is honoured at the gate, not by editing the map.
-static int test_authz_disabled(void)
+static MunitResult test_authz_disabled(const MunitParameter params[], void* user_data)
 {
-    printf("--- --no-authz: a 'bk' row flows anyway ---\n");
+    (void)params;
+    (void)user_data;
 
     binding_map_t bm;
     bm_init(&bm);
-    CHECK(bm_load_xml(&bm, "bm_auth_two_targets.xml") == 0);
+    munit_assert_int(bm_load_xml(&bm, "data/bm_auth_two_targets.xml"), ==, 0);
 
-    service_object_t* auth = auth_service_create("auth_policy_kid.json");
-    CHECK(auth != NULL);
+    service_object_t* auth = auth_service_create("data/auth_policy_kid.json");
+    munit_assert_not_null(auth);
 
     // Kid active: target A opens, target B is left at 'bk'.
     int writes = auth_service_propagate(auth, write_at, &bm);
-    CHECK(writes == 2);
-    CHECK(strcmp(bm.ops[1].out_author_type, "bk") == 0);
+    munit_assert_int(writes, ==, 2);
+    munit_assert_string_equal(bm.ops[1].out_author_type, "bk");
 
     cap_start();
     hes_clme_msg_t msgs[MAX_CAPTURED];
 
     // Baseline: the blocked row really is suppressed.
     feed(&bm, BTN_PATH, 7, 1.0);
-    CHECK(expect_sends(0, msgs) == 0);
+    munit_assert_int(expect_sends(0, msgs), ==, 0);
 
     // Disable authorization, then feed a *different* value: the operand cache
     // recorded the refused press (only the output is left untraced), so the same
     // value again would be skipped as "no change" rather than gated.
     bm_disable_authorization(&bm);
-    CHECK(strcmp(bm.ops[1].out_author_type, "bk") == 0);  // still 'bk': ignored, not rewritten
+    munit_assert_string_equal(bm.ops[1].out_author_type, "bk");  // ignored, not rewritten
     feed(&bm, BTN_PATH, 7, 0.0);
-    CHECK(expect_sends(1, msgs) == 1);
-    CHECK(is_put(&msgs[0], TARGET_B, 2, "0"));
-    printf("test: target B flowed once authorization was disabled (field still 'bk')\n");
-
-    nng_close(g_cap);
-    nng_close(g_bus.pub_sock);
+    munit_assert_int(expect_sends(1, msgs), ==, 1);
+    munit_assert_true(is_put(&msgs[0], TARGET_B, 2, "0"));
 
     auth->destroy(auth);
     free(auth);
-    return 0;
+    return MUNIT_OK;
 }
 
-int main(void)
+static MunitTest auth_propagate_tests[] = {
+  { (char*)"/starts-denied", test_starts_denied, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { (char*)"/kid-partial", test_kid_partial, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { (char*)"/parent-full", test_parent_full, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { (char*)"/unknown-address", test_unknown_address, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL },
+  { (char*)"/authz-disabled", test_authz_disabled, NULL, capture_tear_down, MUNIT_TEST_OPTION_NONE,
+    NULL },
+  { NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL }
+};
+
+static const MunitSuite auth_propagate_suite = {
+  (char*)"/auth-propagate", auth_propagate_tests, NULL, 1, MUNIT_SUITE_OPTION_NONE
+};
+
+int main(int argc, char* argv[])
 {
-    binding_map_t bm;
-    bm_init(&bm);
-
-    if (test_starts_denied(&bm) != 0) {
-        return 1;
-    }
-    if (test_kid_partial() != 0) {
-        return 1;
-    }
-    if (test_parent_full() != 0) {
-        return 1;
-    }
-    if (test_unknown_address() != 0) {
-        return 1;
-    }
-    if (test_authz_disabled() != 0) {
-        return 1;
-    }
-
-    printf("ALL TESTS PASSED\n");
-    return 0;
+  return munit_suite_main(&auth_propagate_suite, NULL, argc, argv);
 }

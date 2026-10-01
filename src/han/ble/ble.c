@@ -291,7 +291,7 @@ int han_ble_main(const char* svc_rep,
     if (reg.n_devices == 0) {
         log_error(
                 "no devices assigned to moduleRefIndex %u by the product "
-                "profile; check product_profile.json and module_ref (config "
+                "profile; check product.json and module_ref (config "
                 "error, not a connection problem)",
                 module_ref);
         return 1;
