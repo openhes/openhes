@@ -35,11 +35,6 @@
 /// An unsupported algorithm, mode or combination, an invalid parameter, or a
 /// failed AEAD authentication is reported as a service-level error -- never as a
 /// partial answer.
-///
-/// Memory/ownership: the cipher table and the keys are file-static and loaded
-/// once; per-request buffers are local to the call. Key material is never logged.
-///
-/// Threading: no locking -- calls come from the core module's loop thread.
 
 #include "crypto.h"
 

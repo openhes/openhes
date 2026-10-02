@@ -1,11 +1,3 @@
-#include <gio/gio.h>
-#include <glib.h>
-#include <signal.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright 2026 Tom G. Huang <tomghuang@gmail.com>
 //
@@ -36,6 +28,15 @@
 /// `make all` and not a ctest test; build it with -DOPENHES_BUILD_DEVICE_TESTS=ON.
 ///
 /// MAC and DEVICE_PATH below select which tag to talk to.
+
+#include <gio/gio.h>
+#include <glib.h>
+
+#include <signal.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define BLUEZ_BUS_NAME "org.bluez"
 #define DEVICE_INTERFACE "org.bluez.Device1"
@@ -103,6 +104,7 @@ static gboolean wait_for_services_resolved(GDBusProxy* dproxy, int timeout_sec)
             }
         }
     }
+
     return FALSE;
 }
 
@@ -138,17 +140,17 @@ static GDBusProxy* find_char_by_uuid(GDBusConnection* conn,
     GVariantIter* obj_iter;
     g_variant_get(objects, "(a{oa{sa{sv}}})", &obj_iter);
 
-    const char* obj_path;
-    GVariant* ifaces_var;
+    const char* obj_path = NULL;
+    GVariant* ifaces_var = NULL;
     while (g_variant_iter_next(obj_iter, "{&o@a{sa{sv}}}", &obj_path, &ifaces_var)) {
         if (!g_str_has_prefix(obj_path, device_path)) {
             g_variant_unref(ifaces_var);
             continue;
         }
 
-        GVariantIter* iface_iter;
-        const char* iface_name;
-        GVariant* props_var;
+        GVariantIter* iface_iter = NULL;
+        const char* iface_name = NULL;
+        GVariant* props_var = NULL;
         g_variant_get(ifaces_var, "a{sa{sv}}", &iface_iter);
 
         while (g_variant_iter_next(iface_iter, "{&s@a{sv}}", &iface_name, &props_var)) {
@@ -190,19 +192,19 @@ done:
 ///   accel = value * (8.0 / 32768.0)    ->  g
 ///   mag   = value * 1.0                ->  microtesla
 ///
-/// @param data  The raw characteristic value.
-/// @param len   Its length; anything shorter than 18 bytes leaves the outputs as
-///              the caller left them.
-/// @param gyro  Receives the three gyroscope values, in degrees/s.
+/// @param data The raw characteristic value.
+/// @param len Its length; anything shorter than 18 bytes leaves the outputs as
+///            the caller left them.
+/// @param gyro Receives the three gyroscope values, in degrees/s.
 /// @param accel Receives the three accelerometer values, in g.
-/// @param mag   Receives the three magnetometer values, in microtesla.
+/// @param mag Receives the three magnetometer values, in microtesla.
 static void convert_motion(const guchar* data, gsize len, double* gyro, double* accel, double* mag)
 {
     if (len < 18) {
         return;
     }
 
-    int16_t raw[9];
+    int16_t raw[9] = {0};
     for (int i = 0; i < 9; i++) {
         raw[i] = (int16_t)(data[2 * i] | ((int16_t)data[2 * i + 1] << 8));
     }
@@ -225,7 +227,6 @@ static gboolean on_read_motion(gpointer user_data)
     (void)user_data;
 
     GError* error = NULL;
-
     GVariant* val = g_dbus_proxy_call_sync(data_proxy, "ReadValue", g_variant_new("(a{sv})", NULL),
                                            G_DBUS_CALL_FLAGS_NONE, 5000, NULL, &error);
     if (!val) {
@@ -235,9 +236,8 @@ static gboolean on_read_motion(gpointer user_data)
     }
 
     GVariant* bytes_variant = g_variant_get_child_value(val, 0);
-    gsize len;
+    gsize len = 0;
     const guchar* bytes = g_variant_get_fixed_array(bytes_variant, &len, 1);
-
     if (len >= 18) {
         double gyro[3], accel[3], mag[3];
         convert_motion(bytes, len, gyro, accel, mag);
@@ -245,9 +245,9 @@ static gboolean on_read_motion(gpointer user_data)
         // ANSI escape: move cursor 4 lines up to overwrite previous block
         printf("\033[4A");
         printf("--- MOTION DATA ---\n");
-        printf("Accel (G):   X: %6.2f, Y: %6.2f, Z: %6.2f\n", accel[0], accel[1], accel[2]);
-        printf("Gyro (deg/s):  X: %6.1f, Y: %6.1f, Z: %6.1f\n", gyro[0], gyro[1], gyro[2]);
-        printf("Mag (uT):    X: %6.1f, Y: %6.1f, Z: %6.1f\n", mag[0], mag[1], mag[2]);
+        printf("Accel (G):    X: %6.2f, Y: %6.2f, Z: %6.2f\n", accel[0], accel[1], accel[2]);
+        printf("Gyro (deg/s): X: %6.1f, Y: %6.1f, Z: %6.1f\n", gyro[0], gyro[1], gyro[2]);
+        printf("Mag (uT):     X: %6.1f, Y: %6.1f, Z: %6.1f\n", mag[0], mag[1], mag[2]);
     }
 
     g_variant_unref(bytes_variant);
@@ -288,6 +288,7 @@ static void cleanup(void)
     if (connection) {
         g_object_unref(connection);
     }
+
     if (loop) {
         g_main_loop_unref(loop);
     }
@@ -295,15 +296,13 @@ static void cleanup(void)
     printf("Disconnected. Exiting.\n");
 }
 
-// -------------------------------------------------------------------------
 int main(void)
 {
-    GError* error = NULL;
-
     signal(SIGINT, handle_sigint);
     signal(SIGTERM, handle_sigint);
 
-    // ---- 1. Connect to system D-Bus ----
+    // 1. Connect to system D-Bus
+    GError* error = NULL;
     connection = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
     if (!connection) {
         g_printerr("D-Bus connection failed: %s\n", error->message);
@@ -311,7 +310,7 @@ int main(void)
         return 1;
     }
 
-    // ---- 2. Create device proxy ----
+    // 2. Create device proxy
     dev_proxy = g_dbus_proxy_new_sync(connection, G_DBUS_PROXY_FLAGS_NONE, NULL, BLUEZ_BUS_NAME,
                                       DEVICE_PATH, DEVICE_INTERFACE, NULL, &error);
     if (!dev_proxy) {
@@ -324,7 +323,7 @@ int main(void)
         return 1;
     }
 
-    // ---- 3. Connect ----
+    // 3. Connect
     printf("Connecting to SensorTag %s...\n", MAC);
     g_dbus_proxy_call_sync(dev_proxy, "Connect", NULL, G_DBUS_CALL_FLAGS_NONE, 30000, NULL, &error);
     if (error) {
@@ -349,7 +348,7 @@ int main(void)
     }
     printf("Services resolved.\n");
 
-    // ---- 4. Discover motion service characteristics ----
+    // 4. Discover motion service characteristics
     printf("Discovering 9-axis motion sensors...\n");
 
     data_proxy = find_char_by_uuid(connection, DEVICE_PATH, MOTION_DATA_UUID, &error);
@@ -379,7 +378,7 @@ int main(void)
     }
     printf("  Config characteristic found.\n");
 
-    // ---- 5. Enable all 9 axes (write 0x7F, 0x00 to config) ----
+    // 5. Enable all 9 axes (write 0x7F, 0x00 to config)
     printf("Enabling 9-Axis Motion Sensors...\n");
     {
         guchar enable[] = {0x7F, 0x00};
@@ -397,17 +396,17 @@ int main(void)
     // Stabilization delay (non-blocking to keep BLE alive)
     printf("Waiting for sensors to stabilize...\n");
     printf("--- MOTION DATA ---\n");
-    printf("Accel (G):   X:   0.00, Y:   0.00, Z:   0.00\n");
-    printf("Gyro (deg/s):  X:   0.0, Y:   0.0, Z:   0.0\n");
-    printf("Mag (uT):    X:   0.0, Y:   0.0, Z:   0.0\n");
+    printf("Accel (G):    X:   0.00, Y:   0.00, Z:   0.00\n");
+    printf("Gyro (deg/s): X:   0.0,  Y:   0.0,  Z:   0.0\n");
+    printf("Mag (uT):     X:   0.0,  Y:   0.0,  Z:   0.0\n");
     printf("\033[4A");
     g_timeout_add(2000, on_read_motion, NULL);
 
-    // ---- 7. Run event loop ----
+    // 7. Run event loop
     loop = g_main_loop_new(NULL, FALSE);
     g_main_loop_run(loop);
 
-    // ---- 8. Clean shutdown ----
+    // 8. Clean shutdown
     cleanup();
     return 0;
 }

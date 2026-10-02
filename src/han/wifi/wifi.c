@@ -36,14 +36,6 @@
 ///   - periodically polls the bulb's actual state and republishes it as an
 ///     event-report stamped with the device's deviceIndex (read objects,
 ///     access 'r'), so the gateway sees ground truth per bulb.
-///
-/// Memory/ownership: the module's state is local to han_wifi_main() -- the device
-/// registry, one wiz_client_t per device and the bus handle. The configuration
-/// strings are the caller's.
-///
-/// Threading: one loop. It blocks in hes_bus_recv() for a bounded timeout, drains
-/// the manifest notifications, polls each bulb and republishes changed state;
-/// SIGINT/SIGTERM only clear the running flag.
 
 #include "wifi.h"
 

@@ -33,14 +33,11 @@
 /// SensorTag resting on a table (+1 g down Z, gyros idle, ~41 uT field
 /// split mostly X/Z) with small noise on every axis. Swap the body for a
 /// real BlueZ D-Bus GATT read when real hardware is available.
-///
-/// Memory/ownership: writes the sample into the caller's out-parameter; no
-/// allocation and no state of its own.
-///
-/// Threading: no locking -- the caller drives it from one loop.
+
+#include "sensortag.h"
+
 #include <stdlib.h>
 #include <time.h>
-#include "sensortag.h"
 
 static int seeded = 0;
 

@@ -35,13 +35,6 @@
 /// This is a blocking, one-shot client: it is called from the time service's
 /// background sync thread (services/time/time_sync.c), never from the module's
 /// bus loop.
-///
-/// Memory/ownership: no handle, and nothing for the caller to release -- the
-/// response lands in the caller's own buffer. libcurl's global state is
-/// initialized once and never torn down.
-///
-/// Threading: blocking and safe from a background thread; see above for why it
-/// must not run on the module's bus loop.
 
 #ifndef OPENHES_SRC_COMMON_HES_HTTPS_H
 #define OPENHES_SRC_COMMON_HES_HTTPS_H

@@ -60,16 +60,6 @@ extern "C" {
 /// The paths are for documents without namespaces (typical HES binding maps).
 /// Returned strings are borrowed from the document and remain valid until
 /// hes_query_close(); do not free them.
-///
-/// Memory/ownership: a hes_query_ctx_t owns the parsed document and every handle
-/// handed out of it -- hes_query_close() releases the lot, and none of those
-/// handles may be freed by the caller. Element lists are the exception: those
-/// arrays are allocated for the caller and released with
-/// hes_query_elem_list_free().
-///
-/// Threading: a context is not thread-safe. libxml2's parser state is initialized
-/// once for the process and deliberately never torn down, so the rule is one
-/// context per thread.
 
 typedef struct hes_query_ctx hes_query_ctx_t;
 typedef struct hes_query_elem hes_query_elem_t;

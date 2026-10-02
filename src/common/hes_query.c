@@ -36,13 +36,7 @@
 ///   - hes_query_open()/hes_query_close(): parse the file, and release the
 ///     document and every handle derived from it. libxml2's parser state is
 ///     initialized on open and deliberately never cleaned up (see the header).
-///
-/// Memory/ownership: the context owns the document; borrowed strings stay valid
-/// until hes_query_close(). The only allocation the caller ever frees is an
-/// element list, via hes_query_elem_list_free().
-///
-/// Threading: no locking. libxml2 parsing is process-wide initialized, so one
-/// context per thread is the rule.
+
 #include "hes_query.h"
 
 #include <libxml/parser.h>

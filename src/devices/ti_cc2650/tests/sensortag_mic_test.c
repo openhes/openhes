@@ -1,10 +1,3 @@
-#include <gio/gio.h>
-#include <glib.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright 2026 Tom G. Huang <tomghuang@gmail.com>
 //
@@ -35,6 +28,14 @@
 /// `make all` and not a ctest test; build it with -DOPENHES_BUILD_DEVICE_TESTS=ON.
 ///
 /// MAC and DEVICE_PATH below select which tag to talk to.
+
+#include <gio/gio.h>
+#include <glib.h>
+
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define BLUEZ_BUS_NAME "org.bluez"
 #define DEVICE_INTERFACE "org.bluez.Device1"
@@ -102,6 +103,7 @@ static gboolean wait_for_services_resolved(GDBusProxy* dproxy, int timeout_sec)
             }
         }
     }
+
     return FALSE;
 }
 
@@ -134,20 +136,20 @@ static GDBusProxy* find_char_by_uuid(GDBusConnection* conn,
     }
 
     GDBusProxy* result = NULL;
-    GVariantIter* obj_iter;
+    GVariantIter* obj_iter = NULL;
     g_variant_get(objects, "(a{oa{sa{sv}}})", &obj_iter);
 
-    const char* obj_path;
-    GVariant* ifaces_var;
+    const char* obj_path = NULL;
+    GVariant* ifaces_var = NULL;
     while (g_variant_iter_next(obj_iter, "{&o@a{sa{sv}}}", &obj_path, &ifaces_var)) {
         if (!g_str_has_prefix(obj_path, device_path)) {
             g_variant_unref(ifaces_var);
             continue;
         }
 
-        GVariantIter* iface_iter;
-        const char* iface_name;
-        GVariant* props_var;
+        GVariantIter* iface_iter = NULL;
+        const char* iface_name = NULL;
+        GVariant* props_var = NULL;
         g_variant_get(ifaces_var, "a{sa{sv}}", &iface_iter);
 
         while (g_variant_iter_next(iface_iter, "{&s@a{sv}}", &iface_name, &props_var)) {
@@ -223,7 +225,7 @@ static gboolean on_read_audio(gpointer user_data)
     }
 
     GVariant* bytes_variant = g_variant_get_child_value(val, 0);
-    gsize len;
+    gsize len = 0;
     const guchar* bytes = g_variant_get_fixed_array(bytes_variant, &len, 1);
 
     if (len > 0) {
@@ -235,9 +237,11 @@ static gboolean on_read_audio(gpointer user_data)
         for (int i = 0; i < bar_len; i++) {
             putchar('#');
         }
+
         for (int i = bar_len; i < 30; i++) {
             putchar(' ');
         }
+
         printf("] (%5.1f)   \r", level);
     } else {
         printf("Microphone warming up...                           \r");
@@ -284,6 +288,7 @@ static void cleanup(void)
     if (connection) {
         g_object_unref(connection);
     }
+
     if (loop) {
         g_main_loop_unref(loop);
     }
@@ -291,7 +296,6 @@ static void cleanup(void)
     printf("Disconnected. Exiting.\n");
 }
 
-// -------------------------------------------------------------------------
 int main(void)
 {
     GError* error = NULL;
@@ -299,7 +303,7 @@ int main(void)
     signal(SIGINT, handle_sigint);
     signal(SIGTERM, handle_sigint);
 
-    // ---- 1. Connect to system D-Bus ----
+    // 1. Connect to system D-Bus ----
     connection = g_bus_get_sync(G_BUS_TYPE_SYSTEM, NULL, &error);
     if (!connection) {
         g_printerr("D-Bus connection failed: %s\n", error->message);
@@ -307,7 +311,7 @@ int main(void)
         return 1;
     }
 
-    // ---- 2. Create device proxy ----
+    // 2. Create device proxy ----
     dev_proxy = g_dbus_proxy_new_sync(connection, G_DBUS_PROXY_FLAGS_NONE, NULL, BLUEZ_BUS_NAME,
                                       DEVICE_PATH, DEVICE_INTERFACE, NULL, &error);
     if (!dev_proxy) {
@@ -320,7 +324,7 @@ int main(void)
         return 1;
     }
 
-    // ---- 3. Connect ----
+    // 3. Connect ----
     printf("Connecting to SensorTag %s...\n", MAC);
     g_dbus_proxy_call_sync(dev_proxy, "Connect", NULL, G_DBUS_CALL_FLAGS_NONE, 30000, NULL, &error);
     if (error) {
@@ -397,11 +401,11 @@ int main(void)
     printf("\nMonitoring Sound Activity (Ctrl+C to stop):\n");
     g_timeout_add(1700, on_read_audio, NULL);
 
-    // ---- 7. Run event loop ----
+    // 7. Run event loop ----
     loop = g_main_loop_new(NULL, FALSE);
     g_main_loop_run(loop);
 
-    // ---- 8. Clean shutdown ----
+    // 8. Clean shutdown ----
     cleanup();
     return 0;
 }

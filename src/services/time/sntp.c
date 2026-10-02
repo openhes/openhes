@@ -27,12 +27,6 @@
 /// more than a day of correction, or a round trip longer than a minute, is
 /// rejected as a wrong or hostile answer rather than applied to the clock
 /// (SNTP_MAX_OFFSET_NS, SNTP_MAX_DELAY_NS).
-///
-/// Memory/ownership: no heap and no state -- each call is self-contained.
-///
-/// Threading: no locking. Called only from the time service's sync thread, which
-/// is why a blocking DNS lookup plus a UDP round trip are acceptable here and
-/// would not be on the bus loop.
 
 #include "sntp.h"
 

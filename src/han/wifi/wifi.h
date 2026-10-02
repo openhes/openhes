@@ -22,12 +22,6 @@
 /// this module's moduleRefIndex, the two hub endpoints and the bulb's IP. The
 /// module itself -- its A.1 duties, the manifest handshake and the WiZ polling --
 /// is documented in wifi.c and README.md.
-///
-/// Memory/ownership: every parameter is a borrowed string, and the module keeps
-/// none of them beyond the call.
-///
-/// Threading: han_wifi_main() runs the module's event loop in the calling thread
-/// and returns when it is asked to stop.
 
 #ifndef OPENHES_SRC_HAN_WIFI_WIFI_H
 #define OPENHES_SRC_HAN_WIFI_WIFI_H

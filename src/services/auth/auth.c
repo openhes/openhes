@@ -32,13 +32,6 @@
 ///   - the decision hook: the per-message authorization callback the binding map
 ///     calls for a row whose output requires proof (Mode B: the credential on the
 ///     incoming message), plus the identity/credential lookups behind it.
-///
-/// Memory/ownership: the policy is a read-only, secret document loaded once at
-/// startup into static tables, and the JSON tree is released after load. Secrets
-/// are never logged and never served over HES-CLME -- GET exposes class
-/// id/name/status only.
-///
-/// Threading: no locking -- driven from the core module's loop thread.
 
 #include "auth.h"
 

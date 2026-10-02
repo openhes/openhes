@@ -31,13 +31,7 @@
 ///   encoder/decoder. Swap hes_clme_msg_t's wire representation for a
 ///   real 18012-4 codec when you're ready to be spec-conformant on
 ///   the wire; the module/service architecture below does not change.
-///
-/// Memory/ownership: a hes_clme_msg_t is plain data -- no pointers, so there is
-/// nothing to allocate or release. It is filled by the sender and read by the
-/// receiver.
-///
-/// Threading: no shared state of its own; a message belongs to whoever holds it.
-///
+
 #ifndef OPENHES_SRC_COMMON_HES_COMMON_H
 #define OPENHES_SRC_COMMON_HES_COMMON_H
 

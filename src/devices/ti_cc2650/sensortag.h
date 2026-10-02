@@ -46,15 +46,6 @@
 ///   real BlueZ D-Bus GATT read (e.g. GDBus/GLib, or a BLE library such as
 ///   SimpleBLE) when you have real hardware and an adapter to test against --
 ///   nothing else in the calling interface module needs to change.
-///
-/// Memory/ownership: a sensortag_t is a flat value object the caller owns --
-/// sensortag_init() zeroes it, there is no allocation and no destructor, and every
-/// accessor writes into caller-supplied out-parameters only.
-///
-/// Threading: no locking. The accessors take a per-device context, but a few of
-/// the simulated ones (the button's, for example) keep file-static state instead
-/// of using it, so driving them from several threads would race -- the BLE module
-/// calls them from its own single loop.
 
 #ifndef OPENHES_SRC_DEVICES_TI_CC2650_SENSORTAG_H
 #define OPENHES_SRC_DEVICES_TI_CC2650_SENSORTAG_H

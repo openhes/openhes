@@ -53,13 +53,7 @@
 /// other directly even ignoring subscriptions -- everything downstream is
 /// mediated by the core's own application logic. That's a nice side effect of
 /// the hub design, not something pub/sub gives you by itself.
-///
-/// Memory/ownership: a hes_bus_t owns its two nng sockets and nothing else; the
-/// component that opened it (hub or leaf) closes it with hes_bus_close().
-///
-/// Threading: no internal synchronization -- a handle is driven from the one
-/// event loop that owns it, blocking in hes_bus_recv() for at most its timeout.
-///
+
 #ifndef OPENHES_SRC_COMMON_HES_BUS_H
 #define OPENHES_SRC_COMMON_HES_BUS_H
 

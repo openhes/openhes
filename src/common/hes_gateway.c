@@ -33,11 +33,7 @@
 /// these paths are short, and enlarging the buffer does not help because its
 /// estimate scales with the buffer. The real depth is bounded by the lexicon
 /// schema.
-///
-/// Memory/ownership: everything is allocated here and owned by the caller's tree;
-/// each loader has a matching _free(). Strings are strdup()'d.
-///
-/// Threading: no shared state; a tree is built and freed by one thread.
+
 #include "hes_gateway.h"
 
 #include "hes_query.h"

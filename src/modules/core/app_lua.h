@@ -34,20 +34,13 @@
 /// The script (app.lua) is demo-sized: its hes_op ref_id==1 branch returns the
 /// button level, and docs/demo_lua_control_light.md shows swapping that branch
 /// for a toggle. Automation logic lives in Lua, so it needs no C changes.
-///
-/// Memory/ownership: app_lua_create() owns the lua_State and the bridge;
-/// app_lua_destroy() releases both. The bus and the service-object array stay the
-/// caller's.
-///
-/// Threading: no locking. Script calls happen on the core module's loop thread,
-/// inside the binding map's evaluation.
 
 #ifndef OPENHES_SRC_MODULES_CORE_APP_LUA_H
 #define OPENHES_SRC_MODULES_CORE_APP_LUA_H
 
 #include "bm/bm.h"
 
-#include "../../common/service_object.h"
+#include "common/service_object.h"
 
 #include <stdint.h>
 

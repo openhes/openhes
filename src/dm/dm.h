@@ -23,11 +23,6 @@
 /// src/cli/cmd_dm.c calls. See docs/poc_design.md sections 9.3-9.4 and 12 for the model: a
 /// static Product Profile Manifest (the virtual half) plus an in-memory registry
 /// of the real devices modules report, served over NNG.
-///
-/// Memory/ownership: nothing here allocates. The profile path and both URLs are
-/// read from the caller and not retained after the call.
-///
-/// Threading: the service runs its own REQ/REP + PUB loop in the calling thread.
 
 #ifndef OPENHES_SRC_DM_DM_H
 #define OPENHES_SRC_DM_DM_H

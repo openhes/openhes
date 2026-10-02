@@ -40,13 +40,7 @@
 /// The module calls hes_ble_mgr_poll() each loop iteration and reacts to
 /// each event by updating its device's online flag and reporting to the
 /// Device Manifest service.
-///
-/// Memory/ownership: the manager is a flat value structure in the caller's own
-/// storage -- hes_ble_mgr_init() zeroes it, and whatever a backend needs lives
-/// inside it. No allocation, no destructor.
-///
-/// Threading: no locking. hes_ble_mgr_poll() is called from the module's own
-/// loop; the bluez backend's D-Bus work is pumped from that same call.
+
 #ifndef OPENHES_SRC_HAN_BLE_HES_BLE_H
 #define OPENHES_SRC_HAN_BLE_HES_BLE_H
 

@@ -31,11 +31,6 @@
 ///   - the members: version, system number, description, class, uniquePublicID and
 ///     the capability declaration, each answering a GET from the values above.
 ///     'fp' itself is never served.
-///
-/// Memory/ownership: the document and the derived key material are file-static and
-/// live for the process; 'fp' is never logged and never copied out of this unit.
-///
-/// Threading: no locking -- driven from the core module's loop thread.
 
 #include "id.h"
 

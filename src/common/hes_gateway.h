@@ -45,12 +45,6 @@ extern "C" {
 /// Every _free() function mirrors its matching loader so ownership is always
 /// explicit.  String fields are strdup()'d; missing elements yield "" so you
 /// never dereference NULL.
-///
-/// Memory/ownership: the tree and every string in it belong to the caller. Both
-/// are allocated by hes_gateway_load() (or its _load_file() wrapper) and released
-/// only by the matching _free() functions.
-///
-/// Threading: no shared state -- one loaded tree is read by whoever owns it.
 
 ////////////////////////////////////////////////////////////////////////////////
 /// A single <data> leaf element (identified by transCode / descriptiveName).

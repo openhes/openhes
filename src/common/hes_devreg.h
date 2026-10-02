@@ -33,13 +33,7 @@
 /// (see docs/poc_design.md section 9.5). Messages whose deviceIndex is not in
 /// this slice are ignored, which is what lets the same device type be
 /// hosted by one module OR spread across several modules.
-///
-/// Memory/ownership: a hes_devreg_t is a flat value structure (fixed arrays), so
-/// there is nothing to allocate or free -- hes_devreg_init() zeroes it and a
-/// slice is copied into it field by field.
-///
-/// Threading: no shared state; a registry belongs to the module that holds it.
-///
+
 #ifndef OPENHES_SRC_COMMON_HES_DEVREG_H
 #define OPENHES_SRC_COMMON_HES_DEVREG_H
 

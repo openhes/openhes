@@ -31,13 +31,6 @@
 /// The realTime object also emits an unsolicited event-report every
 /// REALTIME_EVENT_PERIOD_S seconds, so a subscriber sees the clock move without
 /// polling for it.
-///
-/// Memory/ownership: the object state is file-static; GET answers are built in
-/// the caller's message buffer.
-///
-/// Threading: no locking of its own. The values come from common/hes_clock.h,
-/// whose offset is atomic, because the sync thread writes it while this code reads
-/// it.
 
 #include "time.h"
 

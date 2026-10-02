@@ -1,8 +1,3 @@
-#include <gio/gio.h>
-#include <glib.h>
-#include <signal.h>
-#include <stdio.h>
-
 ////////////////////////////////////////////////////////////////////////////////
 // Copyright 2026 Tom G. Huang <tomghuang@gmail.com>
 //
@@ -34,6 +29,12 @@
 /// -DOPENHES_BUILD_DEVICE_TESTS=ON.
 ///
 /// MAC and DEVICE_PATH below select which tag to talk to.
+
+#include <gio/gio.h>
+#include <glib.h>
+
+#include <signal.h>
+#include <stdio.h>
 
 #define BLUEZ_BUS_NAME "org.bluez"
 #define DEVICE_INTERFACE "org.bluez.Device1"

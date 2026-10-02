@@ -45,17 +45,11 @@
 /// swap them in.
 ///
 /// Build: -DBLE_BACKEND=bluez (the CMake default; needs libglib2.0-dev).
-///
-/// Memory/ownership: the manager and its per-device state live in the caller's
-/// hes_ble_mgr_t. This file's GDBus proxies and D-Bus connection are its own
-/// private state -- nothing for the caller to release.
-///
-/// Threading: no locking. The D-Bus main context is pumped from
-/// hes_ble_mgr_poll(), i.e. on the module's own loop thread.
 
 #include "hes_ble.h"
 
 #include <gio/gio.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

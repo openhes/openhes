@@ -23,12 +23,6 @@
 /// crypto), the Lexicon router and the customer-specific protected app. This
 /// header carries only what a launcher needs -- core_config_t and core_main();
 /// the module's own documentation is in README.md.
-///
-/// Memory/ownership: core_config_t holds borrowed pointers into the caller's
-/// storage (the CLI's argv), so it needs no allocation and no destructor.
-///
-/// Threading: core_main() runs the module's bus loop in the calling thread; the
-/// time service's NTP sync is the one background thread it starts.
 
 #ifndef OPENHES_SRC_MODULES_CORE_CORE_H
 #define OPENHES_SRC_MODULES_CORE_CORE_H

@@ -32,12 +32,6 @@
 /// The TZ probe is process-global state, so its window is kept to a few
 /// microseconds and enters through the sync thread only -- see the note in
 /// geo_tz.h.
-///
-/// Memory/ownership: the probe saves and restores the caller's TZ value in a
-/// fixed buffer; the JSON tree is Jansson's and is released before returning.
-///
-/// Threading: not independently safe -- call it from the time service's sync
-/// thread, as the header explains.
 
 // tm_gmtoff (a BSD/glibc extension) and timegm() need the default feature set;
 // a compiler invoked with a strict -std=c11 would hide both. This must come

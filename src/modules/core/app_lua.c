@@ -35,13 +35,6 @@
 /// A single file-static g_app keeps the Lua C-function signatures simple: this
 /// POC hosts exactly one app per module (see the note at g_app for what to do if
 /// that changes).
-///
-/// Memory/ownership: app_lua_create() owns the lua_State and everything the
-/// script allocates in it; app_lua_destroy() closes the state and releases the
-/// bridge. The bus and the service-object array remain the caller's.
-///
-/// Threading: no locking. Script calls run on the core module's loop thread, in
-/// the middle of the binding map's evaluation -- so a script must not block.
 
 #include "app_lua.h"
 

@@ -22,9 +22,6 @@
 /// One idea in two steps: atomically store the offset NTP measured, then add it
 /// to CLOCK_REALTIME on every read. hes_clock.h explains why the host clock is
 /// corrected rather than stepped.
-///
-/// Threading: the offset is atomic -- the time service's sync thread writes it
-/// while any module's bus loop reads it on every send.
 
 #include "hes_clock.h"
 

@@ -42,12 +42,6 @@
 /// A 'da' list that names nothing the object has yields an empty payload, with a
 /// diagnostic: the client asked for data that does not exist, and the standard's
 /// answer to that is "4.04 Not Found" rather than a silent full dump.
-///
-/// Memory/ownership: nothing is allocated here. The dispatcher picks an object
-/// out of the caller's array and hands the message through.
-///
-/// Threading: no shared state; called from the module's single bus loop.
-///
 
 #ifndef OPENHES_SRC_COMMON_HES_DISPATCH_H
 #define OPENHES_SRC_COMMON_HES_DISPATCH_H

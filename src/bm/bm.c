@@ -39,15 +39,6 @@
 ///     bm_evaluate_all() recurses; the change-detection bound keeps that
 ///     termination-safe for the acyclic (DAG-shaped) tables the standard
 ///     describes.
-///
-/// Memory/ownership: all persistent state lives in the caller-supplied
-/// binding_map_t (bm_init() zeroes it, bm_load_xml() fills it); this unit owns
-/// no heap beyond the transient query context, which is closed before
-/// bm_load_xml() returns.
-///
-/// Threading: not internally synchronized. bm_controller_start() and
-/// bm_processor_handle() are intended to be driven from one event loop (see the
-/// core service module, src/modules/core/core.c).
 
 #include "bm.h"
 

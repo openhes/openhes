@@ -32,13 +32,6 @@
 /// A note on the address: the service object answers on
 ///   /lx/ob/so/aa/ac/cv     (service 'aa', functionalObject 'ac' authClasses)
 /// and GET deliberately exposes only class id/name/status -- never credentials.
-///
-/// Memory/ownership: the policy is loaded once into file-static tables, bounded by
-/// the AUTH_MAX_* limits; the JSON tree is Jansson's and is released after load.
-/// Credential secrets never leave this unit and are never served by GET.
-///
-/// Threading: no locking. The service runs on the core module's loop thread, which
-/// is also where the binding map reads the authorType it wrote.
 
 #ifndef OPENHES_SRC_SERVICES_AUTH_AUTH_H
 #define OPENHES_SRC_SERVICES_AUTH_AUTH_H

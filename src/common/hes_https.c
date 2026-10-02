@@ -12,6 +12,8 @@
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations under
 // the License.
+
+////////////////////////////////////////////////////////////////////////////////
 /// @file
 /// @brief Implementation of the blocking HTTPS GET (hes_https.h): one libcurl
 /// easy handle per call, with a body sink that refuses to truncate.
@@ -33,12 +35,7 @@
 ///     certificate verification against the distribution's CA bundle
 ///     (HES_HTTPS_CA_BUNDLE), timeout, the sink) and requires a 2xx status
 ///     before reporting success.
-///
-/// Memory/ownership: the only thing handed back is the body in the caller's own
-/// buffer; no state is retained between calls.
-///
-/// Threading: blocking and one-shot. Safe from a background thread -- the
-/// global-init race is closed by pthread_once.
+
 #include "hes_https.h"
 
 #include "app_config.h"

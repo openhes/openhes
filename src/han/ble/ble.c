@@ -42,14 +42,6 @@
 /// hes_ble_bluez.c); all other sensor reads remain simulated -- see
 /// src/devices/ti_cc2650/sensortag.h for the real GATT UUIDs and where to swap
 /// them in.
-///
-/// Memory/ownership: the module's state is local to han_ble_main() -- the device
-/// registry, the per-device contexts and the bus handle. The service accessors it
-/// calls live in the HES-free device layer, src/devices/ti_cc2650/.
-///
-/// Threading: one loop. It blocks in hes_bus_recv() for at most
-/// BUS_RECV_TIMEOUT_MS, drains the manifest notifications and polls the BLE
-/// manager on each pass; SIGINT/SIGTERM only clear a flag.
 
 #include "ble.h"
 

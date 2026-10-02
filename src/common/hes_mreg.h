@@ -46,13 +46,7 @@
 /// transport level it can only ever receive information about the devices
 /// it manages (the same "per-module slice" principle that used to be a
 /// file, docs/poc_design.md section 9.4).
-///
-/// Memory/ownership: the two sockets belong to the hes_mreg_t the caller supplies;
-/// a slice is copied into the caller's hes_devreg_t.
-///
-/// Threading: no locking -- driven from the module's own loop, which polls
-/// hes_mreg_recv_update() with a zero timeout.
-///
+
 #ifndef OPENHES_SRC_COMMON_HES_MREG_H
 #define OPENHES_SRC_COMMON_HES_MREG_H
 

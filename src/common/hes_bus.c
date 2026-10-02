@@ -32,11 +32,6 @@
 /// hes_bus_send() stamps every outgoing message with hes_clock_now_ns() -- 18012-3
 /// 11.2.3.1 requires a time stamp on every HES-CLME message -- and puts it on the
 /// one channel that reaches the intended peer.
-///
-/// Memory/ownership: the sockets live in the caller's hes_bus_t; no heap here.
-///
-/// Threading: no locking. A handle is meant to be driven from the single event
-/// loop that owns it.
 
 #include "hes_bus.h"
 #include "hes_clock.h"

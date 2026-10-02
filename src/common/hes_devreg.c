@@ -26,12 +26,6 @@
 ///     the manifest client uses.
 ///
 ///   - hes_devreg_load_file(): read a file first (legacy/bootstrap).
-///
-/// Memory/ownership: writes only into the caller's hes_devreg_t; the JSON tree
-/// stays Jansson's. Strings are copied in with a bounded copy, so nothing here
-/// borrows from the document.
-///
-/// Threading: no shared state.
 
 #include "hes_devreg.h"
 

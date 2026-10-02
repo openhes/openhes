@@ -34,11 +34,6 @@
 /// The payload convention is shared with the service objects: one record per
 /// address, ';'-separated 'transCode=value' pairs -- the same shape the A&A
 /// service's table answers use.
-///
-/// Memory/ownership: no heap; the dispatcher reads the caller's object array and
-/// writes its answer into the message's payload buffer.
-///
-/// Threading: no shared state. The core module's single loop drives it.
 
 #include "hes_dispatch.h"
 

@@ -33,11 +33,6 @@
 /// PropertiesChanged Connected=false; reconnect). Swap by replacing this
 /// file's poll() body; the manager API and the module logic stay the
 /// same.
-///
-/// Memory/ownership: no heap. The manager and its per-device state live in the
-/// caller's hes_ble_mgr_t.
-///
-/// Threading: no locking; driven from the module's own loop.
 
 #include "hes_ble.h"
 

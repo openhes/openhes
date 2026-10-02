@@ -30,14 +30,11 @@
 /// Simulated here (no BlueZ in the sandbox -- see sensortag.h): a slow
 /// random walk around indoor illuminance. Swap the body for a real
 /// BlueZ D-Bus GATT read when real hardware is available.
-///
-/// Memory/ownership: writes the reading into the caller's out-parameter; no
-/// allocation and no state of its own.
-///
-/// Threading: no locking -- the caller drives it from one loop.
+
+#include "sensortag.h"
+
 #include <stdlib.h>
 #include <time.h>
-#include "sensortag.h"
 
 static int seeded = 0;
 static double last_lux = 300.0;

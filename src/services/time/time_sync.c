@@ -31,13 +31,6 @@
 /// Being offline is a first-class case, not an error path: the worker logs, the
 /// snapshot stays invalid, the time source stays 'lx', and the gateway keeps
 /// running on the host clock -- see time_sync.h.
-///
-/// Memory/ownership: the worker owns its thread, mutex, condition variable and the
-/// copied config strings. hes_clock is the only global it touches, and that is
-/// atomic by design.
-///
-/// Threading: this is the one background thread the core module starts. The bus
-/// loop only ever reads the snapshot, under the mutex.
 
 #include "time_sync.h"
 

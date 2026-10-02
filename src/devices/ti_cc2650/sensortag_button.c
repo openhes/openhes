@@ -30,12 +30,7 @@
 /// Simulated here (no BlueZ in the sandbox -- see sensortag.h): returns a
 /// snapshot of the current bits, with an occasional simulated press.
 /// Swap the body for a real BlueZ D-Bus notification handler.
-///
-/// Memory/ownership: writes the bit snapshot into the caller's out-parameter; no
-/// allocation.
-///
-/// Threading: not reentrant -- the simulated press sequence lives in file-static
-/// state and the accessor takes no device context (see the note in sensortag.h).
+
 #include <stdlib.h>
 #include <time.h>
 #include "sensortag.h"

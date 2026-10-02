@@ -41,13 +41,6 @@
 ///
 /// Interface modules report real presence because they are the ones that
 /// actually see the network (e.g. a WiZ bulb that stops answering getPilot).
-///
-/// Memory/ownership: the registry is in-memory and file-static, sized by
-/// MS_MAX_MODULES/MS_MAX_DEVICES. Only the Product Profile Manifest is read from
-/// disk, and its JSON tree is released once loaded.
-///
-/// Threading: single-threaded -- one loop serves the REQ/REP and PUB sockets;
-/// a signal only sets the stop flag.
 
 #include "dm.h"
 

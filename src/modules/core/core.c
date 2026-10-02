@@ -33,13 +33,6 @@
 /// dial into as publishers to send their events. The hub itself
 /// subscribes to everything upstream, since the binding map is the
 /// one place the standard wants to see all HES-CLME traffic.
-///
-/// Memory/ownership: the module's state is local to core_main() -- the binding
-/// map, the service objects and the app bridge are objects created there and
-/// released on exit. The configuration strings are the caller's.
-///
-/// Threading: one event loop, plus the time service's NTP sync thread. The bus,
-/// the binding map and the service objects are touched only from that loop.
 
 #include "core.h"
 

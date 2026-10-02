@@ -39,10 +39,7 @@
 /// every HES-CLME message "to ensure proper sequence of events within the HES
 /// gateway system" -- hes_clock_now_ns() is that block, and hes_bus_send()
 /// stamps every outgoing message with it.
-///
-/// Threading: the offset is atomic. The time service writes it from the sync
-/// thread while the module's bus loop reads it on every send.
-///
+
 #ifndef OPENHES_SRC_COMMON_HES_CLOCK_H
 #define OPENHES_SRC_COMMON_HES_CLOCK_H
 

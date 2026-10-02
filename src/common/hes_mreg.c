@@ -43,12 +43,6 @@
 ///
 /// Both sockets are dialed with a retry loop (50 attempts, 200 ms apart), so a
 /// module can start before the service does.
-///
-/// Memory/ownership: the two nng sockets belong to the caller's hes_mreg_t;
-/// nothing else is kept between calls. The JSON trees are Jansson's, and a slice
-/// is copied into the caller's hes_devreg_t.
-///
-/// Threading: no locking -- the client is driven from the module's own loop.
 
 #include "hes_mreg.h"
 

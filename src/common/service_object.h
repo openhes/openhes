@@ -31,14 +31,7 @@
 /// Every service object in this POC lives inside the single
 /// core service module process (one daemon, cooperative dispatch by
 /// Lexicon path) -- no per-object thread/process is needed.
-///
-/// Memory/ownership: a service_object_t owns neither its path (a fixed array in
-/// the struct) nor `state` -- the object's own module allocates and releases
-/// that, usually once at startup and never after.
-///
-/// Threading: no locking. The callbacks run on the core module's single loop
-/// thread; an object that needs background activity (the time service's NTP
-/// sync) runs its own thread and synchronizes its own state.
+
 #ifndef OPENHES_SRC_COMMON_HES_SERVICE_OBJECT_H
 #define OPENHES_SRC_COMMON_HES_SERVICE_OBJECT_H
 

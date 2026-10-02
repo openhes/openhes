@@ -16,13 +16,6 @@ all provided by src/modules/core/app_lua.c:
 See src/bm/README.md, "Routing data through the Lua app", for the XML.
 
 hes_op is optional: a map that never uses op="ap" simply never calls it.
-
-Memory/ownership: the script owns its own Lua globals; the C side owns the
-lua_State (app_lua_create() / app_lua_destroy()). Nothing here allocates outside
-Lua.
-
-Threading: no locking. The script runs on the core module's loop thread, inside
-the binding map's evaluation -- so a script must not block.
 ]]
 
 print("[lua-app] HES gateway app (customer-specific protected app) started")

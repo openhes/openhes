@@ -22,12 +22,6 @@
 /// this module's moduleRefIndex, the two hub endpoints and an optional MAC
 /// override. The module itself -- its A.1 duties, the manifest handshake, presence
 /// and the value publishing -- is documented in ble.c and README.md.
-///
-/// Memory/ownership: every parameter is a borrowed string, and the module keeps
-/// none of them beyond the call.
-///
-/// Threading: han_ble_main() runs the module's event loop in the calling thread
-/// and returns when it is asked to stop.
 
 #ifndef OPENHES_SRC_HAN_BLE_BLE_H
 #define OPENHES_SRC_HAN_BLE_BLE_H

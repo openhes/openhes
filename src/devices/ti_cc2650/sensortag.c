@@ -24,12 +24,9 @@
 /// The temperature read is a slow random walk, clamped to a plausible indoor
 /// range and seeded per context -- so several SensorTags in one process follow
 /// independent walks, the way separate GATT connections would.
-///
-/// Memory/ownership: no heap. The context belongs to the caller and this unit
-/// keeps no state of its own.
-///
-/// Threading: no locking; a context belongs to one thread.
+
 #include "sensortag.h"
+
 #include <stdint.h>
 #include <stdlib.h>
 #include <time.h>
